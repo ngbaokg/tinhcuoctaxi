@@ -52,7 +52,7 @@
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
-  <div class="max-w-md mx-auto bg-white min-h-screen shadow-md flex flex-col justify-between relative pb-3">
+  <div class="max-w-md mx-auto bg-white min-h-screen min-h-[100dvh] shadow-md flex flex-col justify-between relative">
     
     <!-- Header -->
     <header class="bg-slate-900 text-white p-3.5 flex justify-between items-center sticky top-0 z-30 shadow-md">
@@ -245,11 +245,16 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Tóm tắt doanh thu -->
-      <div class="bg-blue-50/70 border border-blue-100 rounded-2xl p-2.5 flex justify-between items-center text-xs">
-        <span class="text-gray-600 font-medium"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> Doanh thu hôm nay:</span>
-        <span id="quickTodayFare" class="font-bold text-blue-700 text-sm">0 đ</span>
+    <!-- Tóm tắt doanh thu hôm nay: ghim cố định ở đáy màn hình để luôn thấy được, không bị khuất -->
+    <div class="sticky bottom-0 z-20 bg-blue-50/95 backdrop-blur border-t border-blue-100 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] px-3.5 py-2.5 flex justify-between items-center text-xs" style="padding-bottom: max(0.625rem, env(safe-area-inset-bottom));">
+      <span class="text-gray-600 font-medium"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> Doanh thu hôm nay:</span>
+      <div class="flex items-center gap-2">
+        <span id="quickTodayFare" data-real="0 đ" class="font-bold text-blue-700 text-sm">••••••</span>
+        <button onclick="toggleRevenueVisibility()" id="btnToggleRevenue" title="Hiện/ẩn doanh thu" class="text-gray-400 hover:text-blue-600 transition p-1 active:scale-90">
+          <i class="fa-solid fa-eye-slash text-xs"></i>
+        </button>
       </div>
     </div>
 
@@ -479,6 +484,22 @@
     };
 
     // ================= TÍNH NĂNG THÔNG DỊCH VIÊN AI 2 CHIỀU =================
+    // ================= ẨN/HIỆN DOANH THU (BẢO MẬT RIÊNG TƯ) =================
+    let isRevenueVisible = false;
+
+    function toggleRevenueVisibility() {
+      isRevenueVisible = !isRevenueVisible;
+      const span = document.getElementById('quickTodayFare');
+      const icon = document.querySelector('#btnToggleRevenue i');
+      if (isRevenueVisible) {
+        span.innerText = span.dataset.real;
+        icon.className = 'fa-solid fa-eye text-xs';
+      } else {
+        span.innerText = '••••••';
+        icon.className = 'fa-solid fa-eye-slash text-xs';
+      }
+    }
+
     function openTranslateModal() {
       document.getElementById('translateModal').classList.remove('hidden');
     }
@@ -532,17 +553,94 @@
       recog.start();
     }
 
+    // ================= DỊCH NHANH: BỘ CỤM TỪ TAXI THÔNG DỤNG (TRA CỨU TỨC THÌ, KHÔNG CẦN MẠNG) =================
+    // Các câu giao tiếp phổ biến nhất giữa tài xế và khách được dịch sẵn, chính xác hơn máy dịch tự động
+    // và trả lời ngay lập tức (0 độ trễ mạng) thay vì phải gọi API mỗi lần.
+    const quickPhraseBank = [
+      { vi: "Xin chào", en: "Hello", fr: "Bonjour", zh: "你好", ko: "안녕하세요" },
+      { vi: "Cảm ơn", en: "Thank you", fr: "Merci", zh: "谢谢", ko: "감사합니다" },
+      { vi: "Tạm biệt", en: "Goodbye", fr: "Au revoir", zh: "再见", ko: "안녕히 가세요" },
+      { vi: "Bạn đi đâu", en: "Where are you going?", fr: "Où allez-vous ?", zh: "你要去哪里?", ko: "어디로 가세요?" },
+      { vi: "Giá bao nhiêu", en: "How much does it cost?", fr: "Combien ça coûte ?", zh: "多少钱?", ko: "얼마입니까?" },
+      { vi: "Đợi tôi một chút", en: "Please wait a moment", fr: "Attendez un instant, s'il vous plaît", zh: "请稍等一下", ko: "잠시만 기다려 주세요" },
+      { vi: "Chúng ta đã đến nơi", en: "We have arrived", fr: "Nous sommes arrivés", zh: "我们到了", ko: "도착했습니다" },
+      { vi: "Vui lòng thắt dây an toàn", en: "Please fasten your seatbelt", fr: "Veuillez attacher votre ceinture", zh: "请系好安全带", ko: "안전벨트를 매주세요" },
+      { vi: "Bạn có thể trả bằng tiền mặt hoặc chuyển khoản", en: "You can pay by cash or bank transfer", fr: "Vous pouvez payer en espèces ou par virement", zh: "您可以用现金或转账支付", ko: "현금이나 계좌이체로 결제하실 수 있습니다" },
+      { vi: "Chúc bạn một ngày tốt lành", en: "Have a nice day", fr: "Bonne journée", zh: "祝你今天愉快", ko: "좋은 하루 되세요" },
+      { vi: "Không có gì", en: "You're welcome", fr: "De rien", zh: "不客气", ko: "천만에요" },
+      { vi: "Xin lỗi tôi không hiểu", en: "Sorry, I don't understand", fr: "Désolé, je ne comprends pas", zh: "对不起，我不明白", ko: "죄송합니다, 이해가 안 돼요" }
+    ];
+
+    function stripVnTones(str) {
+      str = (str || '').toLowerCase();
+      str = str.replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a');
+      str = str.replace(/[èéẹẻẽêềếệểễ]/g, 'e');
+      str = str.replace(/[ìíịỉĩ]/g, 'i');
+      str = str.replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o');
+      str = str.replace(/[ùúụủũưừứựửữ]/g, 'u');
+      str = str.replace(/[ỳýỵỷỹ]/g, 'y');
+      str = str.replace(/đ/g, 'd');
+      return str.replace(/[^a-z0-9\s]/g, '').trim().replace(/\s+/g, ' ');
+    }
+
+    function normalizeForeignText(str) {
+      return (str || '').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').trim().replace(/\s+/g, ' ');
+    }
+
+    // Xây sẵn 2 bảng tra cứu (chạy 1 lần lúc tải trang) để tra nhanh theo cả 2 chiều
+    const quickPhraseByVi = {};       // "cam on" -> { en, fr, zh, ko }
+    const quickPhraseByForeign = {};  // "en|thank you" -> { vi, en, fr, zh, ko } (dùng khi khách nói)
+    quickPhraseBank.forEach(entry => {
+      quickPhraseByVi[stripVnTones(entry.vi)] = entry;
+      ['en', 'fr', 'zh', 'ko'].forEach(lang => {
+        quickPhraseByForeign[`${lang}|${normalizeForeignText(entry[lang])}`] = entry;
+      });
+    });
+
+    function lookupQuickPhrase(text, fromLang, toLang) {
+      if (fromLang === 'vi' && quickPhraseByVi[stripVnTones(text)]) {
+        return quickPhraseByVi[stripVnTones(text)][toLang] || null;
+      }
+      if (toLang === 'vi') {
+        const match = quickPhraseByForeign[`${fromLang}|${normalizeForeignText(text)}`];
+        return match ? match.vi : null;
+      }
+      return null; // không hỗ trợ tra nhanh giữa 2 ngôn ngữ nước ngoài với nhau, sẽ gọi API dịch
+    }
+
+    // Bộ nhớ tạm trong phiên làm việc: câu đã dịch rồi thì lần sau hỏi lại trả lời ngay, không gọi mạng nữa
+    const translationCache = new Map();
+
     async function translateTextOnline(text, fromLang, toLang) {
+      const cacheKey = `${fromLang}|${toLang}|${text.trim().toLowerCase()}`;
+      if (translationCache.has(cacheKey)) return translationCache.get(cacheKey);
+
+      // Bước 1: Tra cụm từ thông dụng — trả lời tức thì, không cần mạng
+      const quickResult = lookupQuickPhrase(text, fromLang, toLang);
+      if (quickResult) {
+        translationCache.set(cacheKey, quickResult);
+        return quickResult;
+      }
+
+      // Bước 2: Gọi dịch qua mạng, có giới hạn thời gian chờ 5 giây để không bị "treo" lâu khi mạng yếu
       try {
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (data && data[0]) {
-          return data[0].map(item => item[0]).join('');
+          const translated = data[0].map(item => item[0]).join('');
+          translationCache.set(cacheKey, translated);
+          return translated;
         }
         throw new Error("Phản hồi dịch không hợp lệ");
       } catch (e) {
         console.warn("Lỗi dịch:", e);
+        if (e.name === 'AbortError') {
+          return `⚠️ Dịch quá chậm (mạng yếu), thử lại — nội dung gốc: ${text}`;
+        }
         return `⚠️ Không thể dịch (kiểm tra kết nối mạng) — nội dung gốc: ${text}`;
       }
     }
@@ -1378,7 +1476,9 @@
       document.getElementById('statToday').innerText = `${formatNumberWithDots(dayTotal)} đ`;
       document.getElementById('statMonth').innerText = `${formatNumberWithDots(monthTotal)} đ`;
       document.getElementById('statYear').innerText = `${formatNumberWithDots(yearTotal)} đ`;
-      document.getElementById('quickTodayFare').innerText = `${formatNumberWithDots(dayTotal)} đ`;
+      const quickFareEl = document.getElementById('quickTodayFare');
+      quickFareEl.dataset.real = `${formatNumberWithDots(dayTotal)} đ`;
+      quickFareEl.innerText = isRevenueVisible ? quickFareEl.dataset.real : '••••••';
     }
 
     // ================= SAO LƯU / PHỤC HỒI DỮ LIỆU (XUẤT-NHẬP FILE JSON) =================
