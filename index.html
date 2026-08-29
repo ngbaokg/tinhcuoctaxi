@@ -210,8 +210,8 @@
         </div>
 
         <!-- Nút Thông dịch viên AI 2 chiều -->
-        <button onclick="openTranslateModal()" class="w-full bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm mb-2 border border-indigo-500">
-          <i class="fa-solid fa-language"></i> Thông dịch viên AI 2 chiều
+        <button onclick="openTranslateModal()" class="w-full bg-gradient-to-r from-indigo-700 to-blue-700 hover:from-indigo-600 hover:to-blue-600 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm mb-2 border border-indigo-500">
+          <i class="fa-solid fa-language text-base"></i> Thông dịch viên Trực tiếp (Google Translate)
         </button>
 
         <!-- Nút thanh toán -->
@@ -253,21 +253,21 @@
       </div>
     </div>
 
-    <!-- ================= MODAL THÔNG DỊCH VIÊN AI 2 CHIỀU ================= -->
+    <!-- ================= MODAL THÔNG DỊCH VIÊN HỘI THOẠI TRỰC TIẾP ================= -->
     <div id="translateModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-end sm:items-center justify-center p-3 hidden">
-      <div class="bg-white rounded-3xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3 animate-fade-in relative max-h-[90vh]">
+      <div class="bg-white rounded-3xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3 animate-fade-in relative max-h-[92vh]">
         <div class="flex justify-between items-center border-b pb-2">
           <div class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-            <i class="fa-solid fa-language text-indigo-600 text-base"></i> THÔNG DỊCH VIÊN AI
+            <i class="fa-solid fa-comments text-indigo-600 text-base"></i> DỊCH HỘI THOẠI TRỰC TIẾP
           </div>
-          <button onclick="closeTranslateModal()" class="text-gray-400 hover:text-gray-600 text-lg">
+          <button onclick="closeTranslateModal()" class="text-gray-400 hover:text-gray-600 text-lg p-1">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
         <!-- Chọn ngôn ngữ khách đối thoại -->
         <div class="flex items-center justify-between bg-slate-100 p-2 rounded-xl text-xs">
-          <span class="font-bold text-slate-700">Ngôn ngữ khách:</span>
+          <span class="font-bold text-slate-700">Khách nói:</span>
           <select id="foreignLangSelect" class="border rounded-lg px-2 py-1 bg-white font-bold text-indigo-700 outline-none">
             <option value="fr-FR|fr|Tiếng Pháp">🇫🇷 Tiếng Pháp (Français)</option>
             <option value="en-US|en|Tiếng Anh">🇬🇧 Tiếng Anh (English)</option>
@@ -278,23 +278,35 @@
           </select>
         </div>
 
-        <!-- Khung hiển thị nội dung dịch -->
+        <!-- Khung hiển thị nội dung dịch theo phong cách Live Stream Text -->
         <div class="space-y-2 flex-1 overflow-y-auto max-h-56 pr-1 text-xs">
           <!-- Phía tài xế -->
-          <div class="bg-blue-50 border border-blue-200 p-2.5 rounded-2xl">
-            <span class="text-[10px] font-bold text-blue-700 block mb-0.5">Tài xế (Tiếng Việt):</span>
-            <div id="driverOriginalText" class="text-slate-800 italic">Bấm micro xanh bên dưới để nói...</div>
-            <div id="driverTranslatedText" class="text-indigo-800 font-bold mt-1 border-t border-blue-100 pt-1">---</div>
+          <div id="boxDriver" class="bg-blue-50/90 border border-blue-200 p-2.5 rounded-2xl transition">
+            <div class="flex justify-between items-center mb-0.5">
+              <span class="text-[10px] font-bold text-blue-700">🇻🇳 Tài xế (Tiếng Việt):</span>
+              <span id="badgeDriverStatus" class="hidden text-[9px] bg-blue-600 text-white px-1.5 py-0.2 rounded-full animate-pulse">Đang nghe...</span>
+            </div>
+            <div id="driverOriginalText" class="text-slate-800 italic min-h-[18px]">Bấm micro xanh hoặc bật Chế độ Tự Động để nói...</div>
+            <div id="driverTranslatedText" class="text-indigo-800 font-bold mt-1 border-t border-blue-100 pt-1 min-h-[18px]">---</div>
           </div>
           <!-- Phía khách -->
-          <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-2xl">
-            <span class="text-[10px] font-bold text-amber-800 block mb-0.5">Khách hàng:</span>
-            <div id="guestOriginalText" class="text-slate-800 italic">Bấm micro vàng đưa khách nói...</div>
-            <div id="guestTranslatedText" class="text-emerald-800 font-bold mt-1 border-t border-amber-100 pt-1">---</div>
+          <div id="boxGuest" class="bg-amber-50/90 border border-amber-200 p-2.5 rounded-2xl transition">
+            <div class="flex justify-between items-center mb-0.5">
+              <span class="text-[10px] font-bold text-amber-800">🌐 Khách hàng:</span>
+              <span id="badgeGuestStatus" class="hidden text-[9px] bg-amber-600 text-white px-1.5 py-0.2 rounded-full animate-pulse">Đang nghe...</span>
+            </div>
+            <div id="guestOriginalText" class="text-slate-800 italic min-h-[18px]">Bấm micro vàng đưa khách nói...</div>
+            <div id="guestTranslatedText" class="text-emerald-800 font-bold mt-1 border-t border-amber-100 pt-1 min-h-[18px]">---</div>
           </div>
         </div>
 
-        <!-- 2 Nút bấm nói 2 chiều -->
+        <!-- Nút kích hoạt Chế độ Tự Động Hội Thoại 2 Chiều (Google Translate Live Mode) -->
+        <button id="btnAutoConversation" onclick="toggleAutoConversation()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl text-xs shadow transition active:scale-95 flex items-center justify-center gap-2 border border-slate-700">
+          <i class="fa-solid fa-arrows-rotate text-emerald-400"></i>
+          <span id="autoConversationLabel">Bật Chế độ Tự Động Hội Thoại (Live Auto)</span>
+        </button>
+
+        <!-- 2 Nút bấm nói thủ công từng bên -->
         <div class="grid grid-cols-2 gap-2 pt-1 border-t">
           <button id="btnDriverSpeak" onclick="startTranslatingSpeech('driver')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1">
             <i class="fa-solid fa-microphone text-sm"></i>
@@ -468,18 +480,21 @@
     let activeProfileIndex = 0;
     let editingProfileIndex = 0;
 
-    // Cấu hình ngôn ngữ & giọng đọc khách
     let currentGuestLang = 'vi';
     const guestGreetings = {
       vi: { welcomeText: "Xin chào quý khách!", welcomeSub: "Welcome", thankText: "Xin cám ơn quý khách!", thankSub: "Thank you!", speechWelcome: "Xin chào quý khách, chúc quý khách chuyến đi vui vẻ", speechThank: "Xin cám ơn quý khách và hẹn gặp lại", code: "vi-VN" },
-      fr: { welcomeText: "Bienvenue à bord!", welcomeSub: "Bon voyage", thankText: "Merci beaucoup!", thankSub: "Au revoir", speechWelcome: "Bienvenue à bord, passez un rất bon voyage!", speechThank: "Merci beaucoup et au revoir!", code: "fr-FR" },
+      fr: { welcomeText: "Bienvenue à bord!", welcomeSub: "Bon voyage", thankText: "Merci beaucoup!", thankSub: "Au revoir", speechWelcome: "Bienvenue à bord, passez un très bon voyage!", speechThank: "Merci beaucoup et au revoir!", code: "fr-FR" },
       en: { welcomeText: "Welcome on board!", welcomeSub: "Have a nice trip", thankText: "Thank you very much!", thankSub: "See you again", speechWelcome: "Welcome, have a nice trip!", speechThank: "Thank you very much, see you again!", code: "en-US" },
       zh: { welcomeText: "欢迎光临 (Huānyíng)!", welcomeSub: "Welcome", thankText: "非常感谢 (Xièxie)!", thankSub: "Thank you", speechWelcome: "欢迎光临，祝您旅途愉快", speechThank: "非常感谢，欢迎再次光临", code: "zh-CN" },
       ko: { welcomeText: "환영합니다 (Welcome)!", welcomeSub: "Welcome", thankText: "감사합니다 (Thank you)!", thankSub: "See you again", speechWelcome: "환영합니다. 즐거운 여행 되세요", speechThank: "감사합니다. 안녕히 가세요", code: "ko-KR" }
     };
 
-    // ================= TỐI ƯU HÓA GIỌNG ĐỌC & DỊCH THUẬT AI 2 CHIỀU =================
+    // ================= DỊCH HỘI THOẠI TRỰC TIẾP (GOOGLE TRANSLATE LIVE CONVERSATION) =================
     let cachedVoices = {};
+    let activeTranslateRecog = null;
+    let isAutoConversationRunning = false;
+    let autoCurrentSpeaker = 'driver'; // 'driver' hoặc 'guest'
+
     function preloadVoices() {
       if (!('speechSynthesis' in window)) return;
       const voices = window.speechSynthesis.getVoices();
@@ -495,11 +510,36 @@
     }
 
     function closeTranslateModal() {
+      stopAllTranslationSpeech();
       document.getElementById('translateModal').classList.add('hidden');
     }
 
-    function speakTextDirect(text, langCode) {
-      if (!('speechSynthesis' in window) || !text) return;
+    function stopAllTranslationSpeech() {
+      if (activeTranslateRecog) {
+        try { activeTranslateRecog.abort(); } catch(e) {}
+        activeTranslateRecog = null;
+      }
+      isAutoConversationRunning = false;
+      resetLiveUIBadges();
+      const autoBtn = document.getElementById('btnAutoConversation');
+      if (autoBtn) {
+        autoBtn.className = "w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl text-xs shadow transition active:scale-95 flex items-center justify-center gap-2 border border-slate-700";
+        document.getElementById('autoConversationLabel').innerText = "Bật Chế độ Tự Động Hội Thoại (Live Auto)";
+      }
+    }
+
+    function resetLiveUIBadges() {
+      document.getElementById('badgeDriverStatus').classList.add('hidden');
+      document.getElementById('badgeGuestStatus').classList.add('hidden');
+      document.getElementById('btnDriverSpeak').innerHTML = `<i class="fa-solid fa-microphone text-sm"></i><span>Tài xế nói (VN)</span>`;
+      document.getElementById('btnGuestSpeak').innerHTML = `<i class="fa-solid fa-microphone text-sm"></i><span>Khách nói (Ngoại quốc)</span>`;
+    }
+
+    function speakTextDirect(text, langCode, onCompleteCallback = null) {
+      if (!('speechSynthesis' in window) || !text) {
+        if (onCompleteCallback) onCompleteCallback();
+        return;
+      }
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = langCode;
@@ -512,6 +552,14 @@
         const matched = voices.find(v => v.lang.toLowerCase().includes(shortCode));
         if (matched) utterance.voice = matched;
       }
+      
+      utterance.onend = () => {
+        if (onCompleteCallback) onCompleteCallback();
+      };
+      utterance.onerror = () => {
+        if (onCompleteCallback) onCompleteCallback();
+      };
+
       window.speechSynthesis.speak(utterance);
     }
 
@@ -537,9 +585,16 @@
       }
     }
 
-    function startTranslatingSpeech(speaker) {
+    // Khởi động nhận diện & dịch thuật trực tiếp
+    function startTranslatingSpeech(speaker, isAuto = false) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return alert("Trình duyệt không hỗ trợ nhận diện giọng nói.");
+
+      if (activeTranslateRecog) {
+        try { activeTranslateRecog.abort(); } catch(e) {}
+      }
+
+      resetLiveUIBadges();
 
       const selVal = document.getElementById('foreignLangSelect').value.split('|');
       const foreignCode = selVal[0];
@@ -547,38 +602,95 @@
 
       const recog = new SpeechRecognition();
       recog.continuous = false;
-      recog.interimResults = false;
+      recog.interimResults = true; // Bật để hiện chữ thời gian thực như Google Translate
       recog.maxAlternatives = 1;
       recog.lang = speaker === 'driver' ? 'vi-VN' : foreignCode;
 
-      const btn = speaker === 'driver' ? document.getElementById('btnDriverSpeak') : document.getElementById('btnGuestSpeak');
-      const originalBtnHtml = btn.innerHTML;
+      activeTranslateRecog = recog;
+      const isDriver = speaker === 'driver';
+
+      const originalEl = document.getElementById(isDriver ? 'driverOriginalText' : 'guestOriginalText');
+      const transEl = document.getElementById(isDriver ? 'driverTranslatedText' : 'guestTranslatedText');
+      const badgeEl = document.getElementById(isDriver ? 'badgeDriverStatus' : 'badgeGuestStatus');
+      const btn = document.getElementById(isDriver ? 'btnDriverSpeak' : 'btnGuestSpeak');
+
+      badgeEl.classList.remove('hidden');
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sm"></i> Đang nghe...`;
+      originalEl.innerText = "Đang lắng nghe...";
 
-      recog.onresult = async (event) => {
-        const spokenText = event.results[0][0].transcript.trim();
-        if (!spokenText) return;
+      let finalSpokenText = '';
 
-        const isDriver = speaker === 'driver';
-        const originalEl = document.getElementById(isDriver ? 'driverOriginalText' : 'guestOriginalText');
-        const transEl = document.getElementById(isDriver ? 'driverTranslatedText' : 'guestTranslatedText');
-
-        originalEl.innerText = `"${spokenText}"`;
-        transEl.innerText = "⚡ Đang dịch nhanh...";
-
-        const fromLang = isDriver ? 'vi' : foreignLangKey;
-        const toLang = isDriver ? foreignLangKey : 'vi';
-        const targetVoiceCode = isDriver ? foreignCode : 'vi-VN';
-
-        const translated = await translateTextOnline(spokenText, fromLang, toLang);
-        transEl.innerText = `👉 ${translated}`;
-        speakTextDirect(translated, targetVoiceCode);
+      recog.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalSpokenText += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        originalEl.innerText = `"${finalSpokenText || interimTranscript}"`;
       };
 
-      recog.onerror = () => { btn.innerHTML = originalBtnHtml; };
-      recog.onend = () => { btn.innerHTML = originalBtnHtml; };
+      recog.onend = async () => {
+        resetLiveUIBadges();
+        const textToTranslate = finalSpokenText.trim();
+        if (textToTranslate) {
+          transEl.innerText = "⚡ Đang dịch trực tiếp...";
+          const fromLang = isDriver ? 'vi' : foreignLangKey;
+          const toLang = isDriver ? foreignLangKey : 'vi';
+          const targetVoiceCode = isDriver ? foreignCode : 'vi-VN';
 
-      recog.start();
+          const translated = await translateTextOnline(textToTranslate, fromLang, toLang);
+          transEl.innerText = `👉 ${translated}`;
+
+          // Tự động phát âm thanh, sau khi phát xong nếu đang ở Auto Mode thì đảo lượt cho người tiếp theo
+          speakTextDirect(translated, targetVoiceCode, () => {
+            if (isAutoConversationRunning) {
+              autoCurrentSpeaker = isDriver ? 'guest' : 'driver';
+              setTimeout(() => {
+                if (isAutoConversationRunning) startTranslatingSpeech(autoCurrentSpeaker, true);
+              }, 400);
+            }
+          });
+        } else {
+          if (isAutoConversationRunning) {
+            setTimeout(() => {
+              if (isAutoConversationRunning) startTranslatingSpeech(autoCurrentSpeaker, true);
+            }, 500);
+          }
+        }
+      };
+
+      recog.onerror = (e) => {
+        resetLiveUIBadges();
+        if (isAutoConversationRunning && e.error !== 'aborted') {
+          setTimeout(() => {
+            if (isAutoConversationRunning) startTranslatingSpeech(autoCurrentSpeaker, true);
+          }, 800);
+        }
+      };
+
+      try {
+        recog.start();
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+
+    function toggleAutoConversation() {
+      isAutoConversationRunning = !isAutoConversationRunning;
+      const autoBtn = document.getElementById('btnAutoConversation');
+      const label = document.getElementById('autoConversationLabel');
+
+      if (isAutoConversationRunning) {
+        autoBtn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl text-xs shadow transition active:scale-95 flex items-center justify-center gap-2 animate-pulse border border-rose-500";
+        label.innerText = "Dừng Chế độ Tự Động Hội Thoại";
+        autoCurrentSpeaker = 'driver';
+        startTranslatingSpeech('driver', true);
+      } else {
+        stopAllTranslationSpeech();
+      }
     }
 
     // ================= TRỢ LÝ GIỌNG NÓI ĐIỀU KHIỂN XE AI =================
@@ -1458,7 +1570,7 @@
           voiceBtn.classList.add('opacity-30', 'pointer-events-none');
           voiceBtn.title = "Trình duyệt này không hỗ trợ nhận diện giọng nói";
         }
-        ['btnDriverSpeak', 'btnGuestSpeak'].forEach(id => {
+        ['btnDriverSpeak', 'btnGuestSpeak', 'btnAutoConversation'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
             el.disabled = true;
