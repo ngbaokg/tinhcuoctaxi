@@ -52,7 +52,7 @@
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
-  <div class="max-w-md mx-auto bg-white min-h-screen min-h-[100dvh] shadow-md flex flex-col justify-between relative">
+  <div class="max-w-md mx-auto bg-white min-h-screen shadow-md flex flex-col justify-between relative pb-3">
     
     <!-- Header -->
     <header class="bg-slate-900 text-white p-3.5 flex justify-between items-center sticky top-0 z-30 shadow-md">
@@ -116,7 +116,7 @@
             </span>
           </div>
 
-          <!-- Ba đồng hồ song song: Tổng cước / Thời gian / Quãng đường (cùng cỡ chữ, khác màu) -->
+          <!-- Ba đồng hồ song song: Tổng cước / Thời gian / Quãng đường -->
           <div class="grid grid-cols-3 gap-2">
             <div class="bg-gray-800/60 p-2 rounded-xl flex flex-col items-center justify-center">
               <span class="text-[10px] text-gray-400 block mb-1">Tổng cước</span>
@@ -209,7 +209,7 @@
           </button>
         </div>
 
-        <!-- Nút Thông dịch viên AI 2 chiều (dùng trong lúc chở khách, đặt gần Bắt đầu/Kết thúc cho tiện thao tác) -->
+        <!-- Nút Thông dịch viên AI 2 chiều -->
         <button onclick="openTranslateModal()" class="w-full bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm mb-2 border border-indigo-500">
           <i class="fa-solid fa-language"></i> Thông dịch viên AI 2 chiều
         </button>
@@ -245,16 +245,11 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Tóm tắt doanh thu hôm nay: ghim cố định ở đáy màn hình để luôn thấy được, không bị khuất -->
-    <div class="sticky bottom-0 z-20 bg-blue-50/95 backdrop-blur border-t border-blue-100 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] px-3.5 py-2.5 flex justify-between items-center text-xs" style="padding-bottom: max(0.625rem, env(safe-area-inset-bottom));">
-      <span class="text-gray-600 font-medium"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> Doanh thu hôm nay:</span>
-      <div class="flex items-center gap-2">
-        <span id="quickTodayFare" data-real="0 đ" class="font-bold text-blue-700 text-sm">••••••</span>
-        <button onclick="toggleRevenueVisibility()" id="btnToggleRevenue" title="Hiện/ẩn doanh thu" class="text-gray-400 hover:text-blue-600 transition p-1 active:scale-90">
-          <i class="fa-solid fa-eye-slash text-xs"></i>
-        </button>
+      <!-- Tóm tắt doanh thu -->
+      <div class="bg-blue-50/70 border border-blue-100 rounded-2xl p-2.5 flex justify-between items-center text-xs">
+        <span class="text-gray-600 font-medium"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> Doanh thu hôm nay:</span>
+        <span id="quickTodayFare" class="font-bold text-blue-700 text-sm">0 đ</span>
       </div>
     </div>
 
@@ -462,7 +457,7 @@
     let totalKm = 0;
     let secondsElapsed = 0;
     let prevPosition = null;
-    let tripStartTimestamp = null; // mốc thời gian thực (ms) lúc bấm "Bắt đầu", dùng để tính giờ chính xác kể cả khi tab bị nền hoá
+    let tripStartTimestamp = null;
 
     let currentStartCoords = null;
     let currentEndCoords = null;
@@ -477,30 +472,25 @@
     let currentGuestLang = 'vi';
     const guestGreetings = {
       vi: { welcomeText: "Xin chào quý khách!", welcomeSub: "Welcome", thankText: "Xin cám ơn quý khách!", thankSub: "Thank you!", speechWelcome: "Xin chào quý khách, chúc quý khách chuyến đi vui vẻ", speechThank: "Xin cám ơn quý khách và hẹn gặp lại", code: "vi-VN" },
-      fr: { welcomeText: "Bienvenue à bord!", welcomeSub: "Bon voyage", thankText: "Merci beaucoup!", thankSub: "Au revoir", speechWelcome: "Bienvenue à bord, passez un très bon voyage!", speechThank: "Merci beaucoup et au revoir!", code: "fr-FR" },
+      fr: { welcomeText: "Bienvenue à bord!", welcomeSub: "Bon voyage", thankText: "Merci beaucoup!", thankSub: "Au revoir", speechWelcome: "Bienvenue à bord, passez un rất bon voyage!", speechThank: "Merci beaucoup et au revoir!", code: "fr-FR" },
       en: { welcomeText: "Welcome on board!", welcomeSub: "Have a nice trip", thankText: "Thank you very much!", thankSub: "See you again", speechWelcome: "Welcome, have a nice trip!", speechThank: "Thank you very much, see you again!", code: "en-US" },
       zh: { welcomeText: "欢迎光临 (Huānyíng)!", welcomeSub: "Welcome", thankText: "非常感谢 (Xièxie)!", thankSub: "Thank you", speechWelcome: "欢迎光临，祝您旅途愉快", speechThank: "非常感谢，欢迎再次光临", code: "zh-CN" },
       ko: { welcomeText: "환영합니다 (Welcome)!", welcomeSub: "Welcome", thankText: "감사합니다 (Thank you)!", thankSub: "See you again", speechWelcome: "환영합니다. 즐거운 여행 되세요", speechThank: "감사합니다. 안녕히 가세요", code: "ko-KR" }
     };
 
-    // ================= TÍNH NĂNG THÔNG DỊCH VIÊN AI 2 CHIỀU =================
-    // ================= ẨN/HIỆN DOANH THU (BẢO MẬT RIÊNG TƯ) =================
-    let isRevenueVisible = false;
-
-    function toggleRevenueVisibility() {
-      isRevenueVisible = !isRevenueVisible;
-      const span = document.getElementById('quickTodayFare');
-      const icon = document.querySelector('#btnToggleRevenue i');
-      if (isRevenueVisible) {
-        span.innerText = span.dataset.real;
-        icon.className = 'fa-solid fa-eye text-xs';
-      } else {
-        span.innerText = '••••••';
-        icon.className = 'fa-solid fa-eye-slash text-xs';
-      }
+    // ================= TỐI ƯU HÓA GIỌNG ĐỌC & DỊCH THUẬT AI 2 CHIỀU =================
+    let cachedVoices = {};
+    function preloadVoices() {
+      if (!('speechSynthesis' in window)) return;
+      const voices = window.speechSynthesis.getVoices();
+      voices.forEach(v => {
+        const langKey = v.lang.toLowerCase().substring(0, 2);
+        if (!cachedVoices[langKey]) cachedVoices[langKey] = v;
+      });
     }
 
     function openTranslateModal() {
+      preloadVoices();
       document.getElementById('translateModal').classList.remove('hidden');
     }
 
@@ -508,17 +498,57 @@
       document.getElementById('translateModal').classList.add('hidden');
     }
 
+    function speakTextDirect(text, langCode) {
+      if (!('speechSynthesis' in window) || !text) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = langCode;
+      utterance.rate = 1.0;
+      const shortCode = langCode.toLowerCase().substring(0, 2);
+      if (cachedVoices[shortCode]) {
+        utterance.voice = cachedVoices[shortCode];
+      } else {
+        const voices = window.speechSynthesis.getVoices();
+        const matched = voices.find(v => v.lang.toLowerCase().includes(shortCode));
+        if (matched) utterance.voice = matched;
+      }
+      window.speechSynthesis.speak(utterance);
+    }
+
+    async function translateTextOnline(text, fromLang, toLang) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data && data[0]) {
+          return data[0].map(item => item[0]).join('');
+        }
+        throw new Error("Phản hồi không hợp lệ");
+      } catch (e) {
+        clearTimeout(timeoutId);
+        console.warn("Lỗi dịch hoặc mạng trễ:", e);
+        return text;
+      }
+    }
+
     function startTranslatingSpeech(speaker) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return alert("Trình duyệt không hỗ trợ nhận diện giọng nói.");
 
       const selVal = document.getElementById('foreignLangSelect').value.split('|');
-      const foreignCode = selVal[0]; // vd: fr-FR
-      const foreignLangKey = selVal[1]; // vd: fr
+      const foreignCode = selVal[0];
+      const foreignLangKey = selVal[1];
 
       const recog = new SpeechRecognition();
       recog.continuous = false;
       recog.interimResults = false;
+      recog.maxAlternatives = 1;
       recog.lang = speaker === 'driver' ? 'vi-VN' : foreignCode;
 
       const btn = speaker === 'driver' ? document.getElementById('btnDriverSpeak') : document.getElementById('btnGuestSpeak');
@@ -526,135 +556,29 @@
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sm"></i> Đang nghe...`;
 
       recog.onresult = async (event) => {
-        const spokenText = event.results[0][0].transcript;
-        if (speaker === 'driver') {
-          document.getElementById('driverOriginalText').innerText = `"${spokenText}"`;
-          document.getElementById('driverTranslatedText').innerText = "Đang dịch AI...";
-          const translated = await translateTextOnline(spokenText, 'vi', foreignLangKey);
-          document.getElementById('driverTranslatedText').innerText = `👉 ${translated}`;
-          speakTextDirect(translated, foreignCode);
-        } else {
-          document.getElementById('guestOriginalText').innerText = `"${spokenText}"`;
-          document.getElementById('guestTranslatedText').innerText = "Đang dịch AI...";
-          const translated = await translateTextOnline(spokenText, foreignLangKey, 'vi');
-          document.getElementById('guestTranslatedText').innerText = `👉 ${translated}`;
-          speakTextDirect(translated, 'vi-VN');
-        }
+        const spokenText = event.results[0][0].transcript.trim();
+        if (!spokenText) return;
+
+        const isDriver = speaker === 'driver';
+        const originalEl = document.getElementById(isDriver ? 'driverOriginalText' : 'guestOriginalText');
+        const transEl = document.getElementById(isDriver ? 'driverTranslatedText' : 'guestTranslatedText');
+
+        originalEl.innerText = `"${spokenText}"`;
+        transEl.innerText = "⚡ Đang dịch nhanh...";
+
+        const fromLang = isDriver ? 'vi' : foreignLangKey;
+        const toLang = isDriver ? foreignLangKey : 'vi';
+        const targetVoiceCode = isDriver ? foreignCode : 'vi-VN';
+
+        const translated = await translateTextOnline(spokenText, fromLang, toLang);
+        transEl.innerText = `👉 ${translated}`;
+        speakTextDirect(translated, targetVoiceCode);
       };
 
-      recog.onerror = () => {
-        btn.innerHTML = originalBtnHtml;
-      };
-
-      recog.onend = () => {
-        btn.innerHTML = originalBtnHtml;
-      };
+      recog.onerror = () => { btn.innerHTML = originalBtnHtml; };
+      recog.onend = () => { btn.innerHTML = originalBtnHtml; };
 
       recog.start();
-    }
-
-    // ================= DỊCH NHANH: BỘ CỤM TỪ TAXI THÔNG DỤNG (TRA CỨU TỨC THÌ, KHÔNG CẦN MẠNG) =================
-    // Các câu giao tiếp phổ biến nhất giữa tài xế và khách được dịch sẵn, chính xác hơn máy dịch tự động
-    // và trả lời ngay lập tức (0 độ trễ mạng) thay vì phải gọi API mỗi lần.
-    const quickPhraseBank = [
-      { vi: "Xin chào", en: "Hello", fr: "Bonjour", zh: "你好", ko: "안녕하세요" },
-      { vi: "Cảm ơn", en: "Thank you", fr: "Merci", zh: "谢谢", ko: "감사합니다" },
-      { vi: "Tạm biệt", en: "Goodbye", fr: "Au revoir", zh: "再见", ko: "안녕히 가세요" },
-      { vi: "Bạn đi đâu", en: "Where are you going?", fr: "Où allez-vous ?", zh: "你要去哪里?", ko: "어디로 가세요?" },
-      { vi: "Giá bao nhiêu", en: "How much does it cost?", fr: "Combien ça coûte ?", zh: "多少钱?", ko: "얼마입니까?" },
-      { vi: "Đợi tôi một chút", en: "Please wait a moment", fr: "Attendez un instant, s'il vous plaît", zh: "请稍等一下", ko: "잠시만 기다려 주세요" },
-      { vi: "Chúng ta đã đến nơi", en: "We have arrived", fr: "Nous sommes arrivés", zh: "我们到了", ko: "도착했습니다" },
-      { vi: "Vui lòng thắt dây an toàn", en: "Please fasten your seatbelt", fr: "Veuillez attacher votre ceinture", zh: "请系好安全带", ko: "안전벨트를 매주세요" },
-      { vi: "Bạn có thể trả bằng tiền mặt hoặc chuyển khoản", en: "You can pay by cash or bank transfer", fr: "Vous pouvez payer en espèces ou par virement", zh: "您可以用现金或转账支付", ko: "현금이나 계좌이체로 결제하실 수 있습니다" },
-      { vi: "Chúc bạn một ngày tốt lành", en: "Have a nice day", fr: "Bonne journée", zh: "祝你今天愉快", ko: "좋은 하루 되세요" },
-      { vi: "Không có gì", en: "You're welcome", fr: "De rien", zh: "不客气", ko: "천만에요" },
-      { vi: "Xin lỗi tôi không hiểu", en: "Sorry, I don't understand", fr: "Désolé, je ne comprends pas", zh: "对不起，我不明白", ko: "죄송합니다, 이해가 안 돼요" }
-    ];
-
-    function stripVnTones(str) {
-      str = (str || '').toLowerCase();
-      str = str.replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a');
-      str = str.replace(/[èéẹẻẽêềếệểễ]/g, 'e');
-      str = str.replace(/[ìíịỉĩ]/g, 'i');
-      str = str.replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o');
-      str = str.replace(/[ùúụủũưừứựửữ]/g, 'u');
-      str = str.replace(/[ỳýỵỷỹ]/g, 'y');
-      str = str.replace(/đ/g, 'd');
-      return str.replace(/[^a-z0-9\s]/g, '').trim().replace(/\s+/g, ' ');
-    }
-
-    function normalizeForeignText(str) {
-      return (str || '').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').trim().replace(/\s+/g, ' ');
-    }
-
-    // Xây sẵn 2 bảng tra cứu (chạy 1 lần lúc tải trang) để tra nhanh theo cả 2 chiều
-    const quickPhraseByVi = {};       // "cam on" -> { en, fr, zh, ko }
-    const quickPhraseByForeign = {};  // "en|thank you" -> { vi, en, fr, zh, ko } (dùng khi khách nói)
-    quickPhraseBank.forEach(entry => {
-      quickPhraseByVi[stripVnTones(entry.vi)] = entry;
-      ['en', 'fr', 'zh', 'ko'].forEach(lang => {
-        quickPhraseByForeign[`${lang}|${normalizeForeignText(entry[lang])}`] = entry;
-      });
-    });
-
-    function lookupQuickPhrase(text, fromLang, toLang) {
-      if (fromLang === 'vi' && quickPhraseByVi[stripVnTones(text)]) {
-        return quickPhraseByVi[stripVnTones(text)][toLang] || null;
-      }
-      if (toLang === 'vi') {
-        const match = quickPhraseByForeign[`${fromLang}|${normalizeForeignText(text)}`];
-        return match ? match.vi : null;
-      }
-      return null; // không hỗ trợ tra nhanh giữa 2 ngôn ngữ nước ngoài với nhau, sẽ gọi API dịch
-    }
-
-    // Bộ nhớ tạm trong phiên làm việc: câu đã dịch rồi thì lần sau hỏi lại trả lời ngay, không gọi mạng nữa
-    const translationCache = new Map();
-
-    async function translateTextOnline(text, fromLang, toLang) {
-      const cacheKey = `${fromLang}|${toLang}|${text.trim().toLowerCase()}`;
-      if (translationCache.has(cacheKey)) return translationCache.get(cacheKey);
-
-      // Bước 1: Tra cụm từ thông dụng — trả lời tức thì, không cần mạng
-      const quickResult = lookupQuickPhrase(text, fromLang, toLang);
-      if (quickResult) {
-        translationCache.set(cacheKey, quickResult);
-        return quickResult;
-      }
-
-      // Bước 2: Gọi dịch qua mạng, có giới hạn thời gian chờ 5 giây để không bị "treo" lâu khi mạng yếu
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data && data[0]) {
-          const translated = data[0].map(item => item[0]).join('');
-          translationCache.set(cacheKey, translated);
-          return translated;
-        }
-        throw new Error("Phản hồi dịch không hợp lệ");
-      } catch (e) {
-        console.warn("Lỗi dịch:", e);
-        if (e.name === 'AbortError') {
-          return `⚠️ Dịch quá chậm (mạng yếu), thử lại — nội dung gốc: ${text}`;
-        }
-        return `⚠️ Không thể dịch (kiểm tra kết nối mạng) — nội dung gốc: ${text}`;
-      }
-    }
-
-    function speakTextDirect(text, langCode) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = langCode;
-      utterance.rate = 0.95;
-      const voices = window.speechSynthesis.getVoices();
-      const matched = voices.find(v => v.lang.toLowerCase().includes(langCode.toLowerCase().substring(0, 2)));
-      if (matched) utterance.voice = matched;
-      window.speechSynthesis.speak(utterance);
     }
 
     // ================= TRỢ LÝ GIỌNG NÓI ĐIỀU KHIỂN XE AI =================
@@ -732,13 +656,7 @@
       window.speechSynthesis.cancel();
       const langObj = guestGreetings[currentGuestLang] || guestGreetings['vi'];
       const textToSpeak = type === 'welcome' ? langObj.speechWelcome : langObj.speechThank;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = langObj.code;
-      utterance.rate = 0.95;
-      const voices = window.speechSynthesis.getVoices();
-      const matched = voices.find(v => v.lang.toLowerCase().includes(langObj.code.toLowerCase().substring(0, 2)));
-      if (matched) utterance.voice = matched;
-      window.speechSynthesis.speak(utterance);
+      speakTextDirect(textToSpeak, langObj.code);
     }
 
     function setGuestLanguage(lang) {
@@ -751,7 +669,6 @@
             : "px-2 py-1 rounded-xl text-[10px] font-bold text-slate-500 hover:bg-white transition";
         }
       });
-      // Tự đồng bộ luôn select trong modal thông dịch
       const select = document.getElementById('foreignLangSelect');
       if (select) {
         for (let i = 0; i < select.options.length; i++) {
@@ -801,9 +718,6 @@
         if ('wakeLock' in navigator) {
           wakeLock = await navigator.wakeLock.request('screen');
           document.getElementById('wakeLockBadge').classList.remove('hidden');
-          // Trình duyệt tự huỷ Wake Lock khi tab bị ẩn (chuyển app khác) — không phải lỗi của app.
-          // QUAN TRỌNG: phải đặt lại wakeLock = null ở đây, nếu không biến này vẫn trỏ tới
-          // một WakeLockSentinel đã bị huỷ, khiến app tưởng lầm là "vẫn còn" và không xin lại khi quay về.
           wakeLock.addEventListener('release', () => {
             wakeLock = null;
             document.getElementById('wakeLockBadge').classList.add('hidden');
@@ -823,9 +737,6 @@
       }
     }
 
-    // Khi quay lại app (mở lại tab/mở lại từ app khác), tự xin lại Wake Lock nếu đang chạy chuyến,
-    // đồng thời cập nhật ngay đồng hồ thời gian cho khớp với thời gian thực đã trôi qua.
-    // Kiểm tra cả wakeLock.released (không chỉ dựa vào biến null) để chắc chắn không bỏ sót trường hợp nào.
     document.addEventListener('visibilitychange', async () => {
       if (document.visibilityState === 'visible' && isTripRunning) {
         if (!wakeLock || wakeLock.released) {
@@ -839,8 +750,6 @@
       }
     });
 
-    // Một số trình duyệt/di động còn bắn thêm sự kiện focus khi quay lại app (ngoài visibilitychange),
-    // gọi lại cùng logic để tăng độ chắc chắn Wake Lock được khôi phục.
     window.addEventListener('focus', async () => {
       if (isTripRunning && (!wakeLock || wakeLock.released)) {
         await requestWakeLock();
@@ -1108,9 +1017,6 @@
       setStartButtonState('running');
       document.getElementById('btnEnd').disabled = false;
 
-      // Tính giờ theo mốc thời gian thực (tripStartTimestamp) thay vì đếm cộng dồn từng giây,
-      // để khi trình duyệt bị throttle/nền hoá lúc chuyển app khác, đồng hồ vẫn tự "bắt kịp" đúng thời gian thực khi quay lại,
-      // thay vì bị dừng lại rồi chạy tiếp từ chỗ dừng (sai lệch so với thời gian thực đã trôi qua).
       timerInterval = setInterval(() => {
         secondsElapsed = Math.floor((Date.now() - tripStartTimestamp) / 1000);
         document.getElementById('displayTime').innerText = formatTime(secondsElapsed);
@@ -1121,15 +1027,13 @@
         watchId = navigator.geolocation.watchPosition((pos) => {
           const { latitude, longitude, accuracy } = pos.coords;
           const nowMs = Date.now();
-          if (accuracy > 30) return; // bỏ điểm định vị kém chính xác
+          if (accuracy > 30) return;
           if (prevPosition) {
             const d = getDistanceInKm(prevPosition.latitude, prevPosition.longitude, latitude, longitude);
             const dtSec = Math.max((nowMs - prevPosition.timeMs) / 1000, 1);
             const speedKmh = (d / dtSec) * 3600;
-            // Lọc điểm GPS nhảy: bỏ qua nếu tốc độ tính ra > 150km/h (không thực tế trong đô thị)
-            // hoặc quãng đường nhảy quá lớn trong thời gian quá ngắn (< 1 giây)
             if (speedKmh > 150) {
-              prevPosition = { latitude, longitude, timeMs: nowMs }; // vẫn cập nhật vị trí gốc, chỉ bỏ cộng dồn km
+              prevPosition = { latitude, longitude, timeMs: nowMs };
               return;
             }
             if (d > 0.005) {
@@ -1330,12 +1234,12 @@
       renderProfileEditorCard();
     }
 
-    // ================= BẢO MẬT PIN (hash SHA-256, không lưu plaintext) =================
+    // ================= BẢO MẬT PIN =================
     const DEFAULT_PIN_HASH_KEY = 'cfg_pin_hash';
-    const LEGACY_PIN_KEY = 'cfg_pin'; // PIN cũ (plaintext) từ phiên bản trước, dùng để tự nâng cấp 1 lần
+    const LEGACY_PIN_KEY = 'cfg_pin';
 
     async function hashPin(pin) {
-      const enc = new TextEncoder().encode('taxiAI_salt_' + pin); // thêm salt cố định cho khó đoán hơn
+      const enc = new TextEncoder().encode('taxiAI_salt_' + pin);
       const buf = await crypto.subtle.digest('SHA-256', enc);
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
@@ -1352,7 +1256,6 @@
       }
       let storedHash = localStorage.getItem(DEFAULT_PIN_HASH_KEY);
       if (!storedHash) {
-        // Tự nâng cấp: nếu có PIN cũ dạng plaintext, hoặc chưa từng đặt PIN, mặc định là 1234
         const legacyPin = localStorage.getItem(LEGACY_PIN_KEY) || '1234';
         storedHash = await hashPin(legacyPin);
         localStorage.setItem(DEFAULT_PIN_HASH_KEY, storedHash);
@@ -1365,7 +1268,7 @@
       }
       pinFailCount++;
       if (pinFailCount >= 3) {
-        pinLockUntil = Date.now() + 30000; // khóa 30 giây sau 3 lần sai
+        pinLockUntil = Date.now() + 30000;
         pinFailCount = 0;
         alert("Sai PIN 3 lần liên tiếp. Tạm khóa 30 giây.");
       } else {
@@ -1376,7 +1279,7 @@
 
     async function promptOpenSettings() {
       const inputPin = prompt("Nhập mã PIN bảo mật (mặc định: 1234):");
-      if (inputPin === null) return; // người dùng bấm Hủy
+      if (inputPin === null) return;
       const ok = await verifyPin(inputPin);
       if (!ok) return;
 
@@ -1389,7 +1292,7 @@
       document.getElementById('bankCode').value = localStorage.getItem('cfg_bank') || '';
       document.getElementById('bankAcc').value = localStorage.getItem('cfg_acc') || '';
       document.getElementById('bankName').value = localStorage.getItem('cfg_name') || '';
-      document.getElementById('appPin').value = ''; // không hiển thị lại PIN cũ, để trống = giữ nguyên
+      document.getElementById('appPin').value = '';
       document.getElementById('settingsModal').classList.remove('hidden');
     }
 
@@ -1398,7 +1301,6 @@
     async function saveSettings() {
       saveCurrentEditingCard();
 
-      // ---- Validate dữ liệu trước khi lưu ----
       for (const p of rateProfiles) {
         if (p.threshold <= 0 || p.threshold > 999) return alert(`Mốc chuyển km của "${p.name}" phải trong khoảng 1-999 km!`);
         if (p.tier1 < 0 || p.tier2 < 0 || p.opening < 0) return alert(`Giá cước của "${p.name}" không được là số âm!`);
@@ -1476,12 +1378,10 @@
       document.getElementById('statToday').innerText = `${formatNumberWithDots(dayTotal)} đ`;
       document.getElementById('statMonth').innerText = `${formatNumberWithDots(monthTotal)} đ`;
       document.getElementById('statYear').innerText = `${formatNumberWithDots(yearTotal)} đ`;
-      const quickFareEl = document.getElementById('quickTodayFare');
-      quickFareEl.dataset.real = `${formatNumberWithDots(dayTotal)} đ`;
-      quickFareEl.innerText = isRevenueVisible ? quickFareEl.dataset.real : '••••••';
+      document.getElementById('quickTodayFare').innerText = `${formatNumberWithDots(dayTotal)} đ`;
     }
 
-    // ================= SAO LƯU / PHỤC HỒI DỮ LIỆU (XUẤT-NHẬP FILE JSON) =================
+    // ================= SAO LƯU / PHỤC HỒI DỮ LIỆU =================
     function exportTripData() {
       const trips = JSON.parse(localStorage.getItem('taxi_trips') || '[]');
       if (trips.length === 0) return alert("Chưa có dữ liệu chuyến đi nào để xuất.");
@@ -1550,15 +1450,13 @@
       alert("Đã xoá toàn bộ lịch sử.");
     }
 
-    // ================= KIỂM TRA HỖ TRỢ TRÌNH DUYỆT (ẨN NÚT NẾU KHÔNG HỖ TRỢ) =================
     function checkBrowserFeatureSupport() {
       const hasSpeechRecognition = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
       if (!hasSpeechRecognition) {
-        // Không hỗ trợ nhận diện giọng nói: ẩn nút trợ lý giọng nói + nút micro trong modal thông dịch
         const voiceBtn = document.getElementById('btnVoiceAssistant');
         if (voiceBtn) {
           voiceBtn.classList.add('opacity-30', 'pointer-events-none');
-          voiceBtn.title = "Trình duyệt này không hỗ trợ nhận diện giọng nói (khuyên dùng Chrome trên Android)";
+          voiceBtn.title = "Trình duyệt này không hỗ trợ nhận diện giọng nói";
         }
         ['btnDriverSpeak', 'btnGuestSpeak'].forEach(id => {
           const el = document.getElementById(id);
@@ -1570,13 +1468,11 @@
         });
       }
 
-      // Cảnh báo nếu Wake Lock (giữ màn hình sáng) không thể hoạt động do môi trường không đủ điều kiện:
-      // API này CHỈ chạy trên HTTPS hoặc localhost, KHÔNG chạy khi mở file trực tiếp (file://) hoặc HTTP thường.
       if (!('wakeLock' in navigator)) {
-        console.warn('Wake Lock API không khả dụng: cần mở trang qua HTTPS (hoặc localhost), không hỗ trợ khi mở trực tiếp file HTML hoặc HTTP thường.');
+        console.warn('Wake Lock API không khả dụng.');
         const badge = document.getElementById('wakeLockBadge');
         if (badge) {
-          badge.title = "Thiết bị/trình duyệt này không hỗ trợ giữ màn hình sáng, hoặc trang chưa được mở qua HTTPS";
+          badge.title = "Thiết bị/trình duyệt này không hỗ trợ giữ màn hình sáng";
         }
       }
     }
@@ -1586,13 +1482,12 @@
       updateHeaderInfo();
       loadHistoryAndStats();
       checkBrowserFeatureSupport();
+      preloadVoices();
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = preloadVoices;
       }
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {
-          // Nếu chưa host sw.js/manifest.json cùng thư mục, app vẫn chạy bình thường (chỉ mất tính năng offline/cài đặt)
-        });
+        navigator.serviceWorker.register('sw.js').catch(() => {});
       }
     };
   </script>
