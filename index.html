@@ -166,7 +166,10 @@
           <div class="space-y-2 mb-2">
             <div class="relative">
               <div class="flex gap-1.5">
-                <input id="inputStart" type="text" placeholder="Nhập điểm đón..." autocomplete="off" class="flex-1 border border-gray-300 rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white" oninput="handleAddressInput('start')">
+                <input id="inputStart" type="text" placeholder="Nhập điểm đón, bấm Enter hoặc nút tìm..." autocomplete="off" class="flex-1 border border-gray-300 rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white" onkeydown="if(event.key==='Enter') triggerAddressSearch('start')">
+                <button onclick="triggerAddressSearch('start')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-xl text-xs flex items-center justify-center active:scale-95 transition">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
                 <button onclick="getCurrentLocationForStart()" title="Bắt vị trí hiện tại" class="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 rounded-xl text-xs flex items-center justify-center active:scale-95 transition">
                   <i class="fa-solid fa-location-crosshairs"></i>
                 </button>
@@ -175,10 +178,16 @@
             </div>
 
             <div class="relative">
-              <input id="inputEnd" type="text" placeholder="Nhập điểm đến..." autocomplete="off" class="w-full border border-gray-300 rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white" oninput="handleAddressInput('end')">
+              <div class="flex gap-1.5">
+                <input id="inputEnd" type="text" placeholder="Nhập điểm đến, bấm Enter hoặc nút tìm..." autocomplete="off" class="flex-1 border border-gray-300 rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white" onkeydown="if(event.key==='Enter') triggerAddressSearch('end')">
+                <button onclick="triggerAddressSearch('end')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-xl text-xs flex items-center justify-center active:scale-95 transition">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+              </div>
               <div id="endSuggestBox" class="autocomplete-items hidden"></div>
             </div>
           </div>
+          <p class="text-[9px] text-gray-400 text-right -mt-1.5 mb-2">Dữ liệu địa chỉ © <a href="https://www.openstreetmap.org/copyright" target="_blank" class="underline">OpenStreetMap</a></p>
 
           <div class="grid grid-cols-3 gap-2">
             <button onclick="openGoogleMapsDirect()" class="col-span-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs shadow transition active:scale-95 flex items-center justify-center gap-1">
@@ -320,7 +329,15 @@
           </div>
           <div class="relative">
             <label class="text-[10px] font-bold text-slate-500">Địa điểm đón *</label>
-            <input id="apptLocationInput" type="text" placeholder="Nhập địa chỉ đón khách..." autocomplete="off" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" oninput="handleAddressInput('appt')">
+            <div class="flex gap-1.5 mt-0.5">
+              <input id="apptLocationInput" type="text" placeholder="Nhập địa chỉ, bấm Enter hoặc nút tìm..." autocomplete="off" class="flex-1 border rounded-lg p-2 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" onkeydown="if(event.key==='Enter') triggerAddressSearch('appt')">
+              <button onclick="triggerAddressSearch('appt')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+              <button onclick="openMapsForAppointmentInput()" title="Mở Google Maps dẫn đường tới đây" class="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
+                <i class="fa-solid fa-diamond-turn-right"></i>
+              </button>
+            </div>
             <div id="apptSuggestBox" class="autocomplete-items hidden"></div>
           </div>
           <div class="grid grid-cols-2 gap-2">
@@ -1087,18 +1104,38 @@
       }
     });
 
-    function handleAddressInput(type) {
-      clearTimeout(debounceTimer);
+    // ================= TÌM ĐỊA CHỈ (Nominatim/OpenStreetMap) =================
+    // QUAN TRỌNG: theo đúng chính sách sử dụng của Nominatim (chỉ tìm khi người dùng CHỦ ĐỘNG bấm nút/Enter,
+    // KHÔNG tự động gợi ý theo từng ký tự gõ - kiểu "auto-complete" bị chính sách của họ cấm và sẽ bị chặn IP).
+    // Xem: https://operations.osmfoundation.org/policies/nominatim/
+    let lastAddressSearchAt = 0; // để tự giới hạn không quá 1 yêu cầu/giây theo đúng chính sách
+    const addressSearchCache = new Map(); // lưu lại kết quả các từ khoá đã tìm để tránh gọi lại y hệt
+
+    function triggerAddressSearch(type) {
       const inputEl = type === 'start' ? document.getElementById('inputStart') : type === 'end' ? document.getElementById('inputEnd') : document.getElementById('apptLocationInput');
       const query = inputEl.value.trim();
       if (query.length < 2) { closeAllSuggestBoxes(); return; }
-      debounceTimer = setTimeout(() => searchLocations(query, type), 350);
+      searchLocations(query, type);
     }
 
     async function searchLocations(query, type) {
       const suggestBox = type === 'start' ? document.getElementById('startSuggestBox') : type === 'end' ? document.getElementById('endSuggestBox') : document.getElementById('apptSuggestBox');
+      const cacheKey = `${query.toLowerCase()}`;
+
+      if (addressSearchCache.has(cacheKey)) {
+        renderSuggestions(addressSearchCache.get(cacheKey), type, suggestBox);
+        return;
+      }
+
+      // Tự giới hạn tần suất gọi (không quá 1 lần/giây) để tuân thủ chính sách và tránh bị chặn IP
+      const now = Date.now();
+      const waitMs = Math.max(0, 1000 - (now - lastAddressSearchAt));
+
       suggestBox.innerHTML = '<div class="p-2 text-center text-gray-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tìm địa chỉ...</div>';
       suggestBox.classList.remove('hidden');
+      if (waitMs > 0) await new Promise(r => setTimeout(r, waitMs));
+      lastAddressSearchAt = Date.now();
+
       let results = [];
       let fetchError = null;
       try {
@@ -1118,10 +1155,11 @@
         console.warn("Lỗi tìm địa chỉ:", e);
       }
       if (fetchError) {
-        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Không thể tìm địa chỉ, kiểm tra kết nối mạng.</div>';
+        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Không tìm được địa chỉ lúc này (dịch vụ tìm địa chỉ miễn phí đang quá tải/giới hạn). Vui lòng thử lại sau ít phút.</div>';
         suggestBox.classList.remove('hidden');
         return;
       }
+      addressSearchCache.set(cacheKey, results); // lưu cache, tra cùng từ khoá lần sau không cần gọi mạng lại
       renderSuggestions(results, type, suggestBox);
     }
 
@@ -1312,6 +1350,7 @@
             <div class="flex justify-between items-start gap-2 mb-1">
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeColor}">${badgeText}</span>
               <div class="flex gap-1 shrink-0">
+                <button onclick="openMapsForAppointment('${item.id}')" title="Mở Google Maps dẫn đường" class="text-blue-600 hover:bg-blue-50 w-6 h-6 rounded-lg flex items-center justify-center"><i class="fa-solid fa-diamond-turn-right text-xs"></i></button>
                 ${!isDone ? `<button onclick="markAppointmentDone('${item.id}')" title="Đánh dấu đã đón khách" class="text-emerald-600 hover:bg-emerald-50 w-6 h-6 rounded-lg flex items-center justify-center"><i class="fa-solid fa-check text-xs"></i></button>` : ''}
                 <button onclick="deleteAppointment('${item.id}')" title="Xoá" class="text-rose-500 hover:bg-rose-50 w-6 h-6 rounded-lg flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
               </div>
@@ -1421,6 +1460,23 @@
       let destParam = currentEndCoords ? `${currentEndCoords[0]},${currentEndCoords[1]}` : encodeURIComponent(endText);
       let gmapUrl = originParam ? `https://www.google.com/maps/dir/?api=1&origin=${originParam}&destination=${destParam}&travelmode=driving` : `https://www.google.com/maps/dir/?api=1&destination=${destParam}&travelmode=driving`;
       window.open(gmapUrl, '_blank');
+    }
+
+    // Mở Google Maps dẫn đường thẳng tới địa điểm đón khách đã nhập trong lịch hẹn (từ vị trí hiện tại của tài xế)
+    function openMapsForAppointmentInput() {
+      const locText = document.getElementById('apptLocationInput').value.trim();
+      if (!locText) { customAlert("Vui lòng nhập địa điểm đón trước!"); return; }
+      const destParam = apptSelectedCoords ? `${apptSelectedCoords[0]},${apptSelectedCoords[1]}` : encodeURIComponent(locText);
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${destParam}&travelmode=driving`, '_blank');
+    }
+
+    // Mở Google Maps dẫn đường thẳng tới địa điểm của MỘT lịch hẹn cụ thể trong danh sách (bấm là đi luôn)
+    function openMapsForAppointment(id) {
+      const list = loadAppointments();
+      const item = list.find(a => a.id === id);
+      if (!item) return;
+      const destParam = item.coords ? `${item.coords[0]},${item.coords[1]}` : encodeURIComponent(item.location);
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${destParam}&travelmode=driving`, '_blank');
     }
 
     function setStartButtonState(state) {
