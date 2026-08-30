@@ -572,16 +572,11 @@
     }
 
     // Mở app Google Dịch thật trên điện thoại (chế độ Trò chuyện/Live có sẵn của Google) khi tài xế muốn dùng bản chính chủ.
-    // Lưu ý: Google không cung cấp cách nhúng thẳng tính năng "Dịch trực tiếp" của app họ vào trang web khác,
-    // nên nút này chỉ mở nhanh sang app đó (Android); trên iOS/máy tính sẽ mở trang translate.google.com.
+    // Lưu ý: Google không cung cấp cách nhúng thẳng tính năng "Dịch trực tiếp" của app họ vào trang web khác.
+    // Dùng link HTTPS thẳng tới translate.google.com (thay vì cú pháp "intent://" trước đây) để tránh bị các đời
+    // Android mới ép mở CH Play trước — Android sẽ tự mở bằng app Google Dịch nếu đã cài, không thì mới ra web.
     function openGoogleTranslateApp() {
-      const ua = navigator.userAgent || '';
-      if (/Android/i.test(ua)) {
-        const fallback = encodeURIComponent('https://play.google.com/store/apps/details?id=com.google.android.apps.translate');
-        window.location.href = `intent://#Intent;package=com.google.android.apps.translate;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url=${fallback};end`;
-      } else {
-        window.open('https://translate.google.com/', '_blank');
-      }
+      window.open('https://translate.google.com/', '_blank');
     }
 
     // ================= CHẾ ĐỘ DỊCH TRỰC TIẾP (LIVE): bấm 1 lần, nghe-dịch-đọc-nghe lại liên tục, không cần bấm lại từng câu =================
