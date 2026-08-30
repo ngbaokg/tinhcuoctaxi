@@ -351,6 +351,11 @@
             </div>
           </div>
           <div>
+            <label class="text-[10px] font-bold text-slate-500">Giá tiền dự kiến (không bắt buộc)</label>
+            <input id="apptPriceInput" type="text" inputmode="numeric" placeholder="VD: 200.000" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500 font-semibold" oninput="handleCurrencyInput(this)">
+            <p class="text-[9px] text-gray-400 mt-0.5">Khi bấm "Đã đón khách", số tiền này sẽ tự cộng vào doanh thu.</p>
+          </div>
+          <div>
             <label class="text-[10px] font-bold text-slate-500">Ghi chú (không bắt buộc)</label>
             <input id="apptNoteInput" type="text" placeholder="VD: đón tại cổng B, mang theo hành lý lớn..." class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
           </div>
@@ -1254,6 +1259,7 @@
         document.getElementById('apptLocationInput').value = '';
         document.getElementById('apptNameInput').value = '';
         document.getElementById('apptPhoneInput').value = '';
+        document.getElementById('apptPriceInput').value = '';
         document.getElementById('apptNoteInput').value = '';
         apptSelectedCoords = null;
       }
@@ -1265,10 +1271,12 @@
       const location = document.getElementById('apptLocationInput').value.trim();
       const name = document.getElementById('apptNameInput').value.trim();
       const phone = document.getElementById('apptPhoneInput').value.trim();
+      const price = parseFormattedNumber(document.getElementById('apptPriceInput').value);
       const note = document.getElementById('apptNoteInput').value.trim();
 
       if (!date || !time) { await customAlert("Vui lòng chọn đầy đủ ngày và giờ hẹn!"); return; }
       if (!location) { await customAlert("Vui lòng nhập địa điểm đón khách!"); return; }
+      if (price < 0) { await customAlert("Giá tiền không được là số âm!"); return; }
 
       const dateTime = new Date(`${date}T${time}:00`);
       if (isNaN(dateTime.getTime())) { await customAlert("Ngày/giờ không hợp lệ!"); return; }
@@ -1281,6 +1289,7 @@
         coords: apptSelectedCoords,
         customerName: name,
         phone,
+        price,
         note,
         status: 'pending',
         reminded: false
@@ -1298,6 +1307,24 @@
       if (!item) return;
       item.status = 'done';
       saveAppointments(list);
+
+      // Nếu lịch hẹn có ghi giá tiền, tự động cộng số tiền này vào doanh thu (giống 1 cuốc xe hoàn thành)
+      if (item.price && item.price > 0) {
+        saveTrip({
+          id: Date.now(),
+          date: item.dateTime,
+          distance: '0.00',
+          duration: '00:00:00',
+          mode: 'Lịch hẹn',
+          paymentMethod: 'Lịch hẹn',
+          baseFare: item.price,
+          extraFee: 0,
+          total: item.price,
+          note: `Lịch hẹn: ${item.location}${item.customerName ? ' - ' + item.customerName : ''}`
+        });
+        loadHistoryAndStats();
+      }
+
       renderAppointmentList();
       updateApptBadge();
     }
@@ -1357,6 +1384,7 @@
             </div>
             <div class="text-xs font-bold text-slate-800 flex items-center gap-1"><i class="fa-solid fa-location-dot text-fuchsia-500"></i> ${item.location}</div>
             ${item.customerName || item.phone ? `<div class="text-[11px] text-slate-600 mt-0.5">${item.customerName || ''}${item.customerName && item.phone ? ' - ' : ''}${item.phone || ''}</div>` : ''}
+            ${item.price ? `<div class="text-[11px] font-bold text-emerald-600 mt-0.5"><i class="fa-solid fa-sack-dollar mr-0.5"></i>${formatNumberWithDots(item.price)} đ${isDone ? ' (đã cộng doanh thu)' : ''}</div>` : ''}
             ${item.note ? `<div class="text-[11px] text-slate-500 italic mt-0.5">${item.note}</div>` : ''}
           </div>
         `;
