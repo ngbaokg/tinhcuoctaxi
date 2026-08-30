@@ -52,10 +52,10 @@
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
-  <div class="max-w-md mx-auto bg-white min-h-screen shadow-md flex flex-col justify-between relative pb-3">
+  <div class="max-w-md mx-auto bg-white shadow-md flex flex-col relative overflow-hidden" style="height: 100vh; height: 100dvh;">
     
-    <!-- Header -->
-    <header class="bg-slate-900 text-white p-3.5 flex justify-between items-center sticky top-0 z-30 shadow-md">
+    <!-- Header (cố định, không cuộn) -->
+    <header class="bg-slate-900 text-white p-3.5 flex justify-between items-center shrink-0 z-30 shadow-md">
       <div>
         <div class="flex items-center gap-2">
           <h1 class="text-base font-bold tracking-wide">ĐỒNG HỒ TAXI AI</h1>
@@ -80,8 +80,8 @@
       </div>
     </header>
 
-    <!-- Màn hình chính -->
-    <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2.5">
+    <!-- Màn hình chính: VÙNG CUỘN RIÊNG, header/footer luôn cố định ngoài vùng này -->
+    <div class="p-3.5 flex-1 overflow-y-auto space-y-2.5">
       <div>
         <!-- Thanh chọn quốc tịch khách hàng -->
         <div class="bg-slate-100 p-1.5 rounded-2xl flex items-center justify-between text-xs mb-2.5 border border-slate-200 shadow-sm">
@@ -116,24 +116,24 @@
             </span>
           </div>
 
-          <!-- Ba đồng hồ song song: Tổng cước / Thời gian / Quãng đường -->
+          <!-- Ba đồng hồ song song: Tổng cước / Thời gian / Quãng đường (cùng cỡ chữ, khác màu) -->
           <div class="grid grid-cols-3 gap-2">
             <div class="bg-gray-800/60 p-2 rounded-xl flex flex-col items-center justify-center">
-              <span class="text-[10px] text-gray-400 block mb-1">Tổng cước</span>
+              <span class="text-[10px] text-gray-400 block mb-1" id="meterFareLabel">Tổng cước</span>
               <div id="displayFare" class="text-base sm:text-lg font-black text-yellow-400 leading-tight">0<span class="text-[10px] font-normal ml-0.5">đ</span></div>
             </div>
             <div class="bg-gray-800/60 p-2 rounded-xl flex flex-col items-center justify-center">
-              <span class="text-[10px] text-gray-400 block mb-1">Thời gian</span>
+              <span class="text-[10px] text-gray-400 block mb-1" id="meterTimeLabel">Thời gian</span>
               <div id="displayTime" class="text-base sm:text-lg font-black text-cyan-400 leading-tight">00:00:00</div>
             </div>
             <div class="bg-gray-800/60 p-2 rounded-xl flex flex-col items-center justify-center">
-              <span class="text-[10px] text-gray-400 block mb-1">Quãng đường</span>
+              <span class="text-[10px] text-gray-400 block mb-1" id="meterDistanceLabel">Quãng đường</span>
               <div id="displayDistance" class="text-base sm:text-lg font-black text-emerald-400 leading-tight">0.00 km</div>
             </div>
           </div>
 
           <div class="flex justify-between items-center mt-2.5 pt-2 border-t border-gray-800 px-1">
-            <span class="text-[10px] text-gray-400">Cước chờ</span>
+            <span class="text-[10px] text-gray-400" id="waitFareLabel">Cước chờ</span>
             <div id="displayWaitFare" class="text-xs font-bold text-amber-300">0 đ</div>
           </div>
         </div>
@@ -202,25 +202,25 @@
         <!-- Nút Bắt đầu / Kết thúc -->
         <div class="grid grid-cols-2 gap-2.5 mb-2">
           <button id="btnStart" onclick="startTrip()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm">
-            <i class="fa-solid fa-play"></i> Bắt đầu
+            <i class="fa-solid fa-play"></i> <span id="btnStartLabel">Bắt đầu</span>
           </button>
           <button id="btnEnd" onclick="endTrip()" disabled class="bg-rose-600 hover:bg-rose-700 disabled:opacity-30 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm">
-            <i class="fa-solid fa-flag-checkered"></i> Kết thúc
+            <i class="fa-solid fa-flag-checkered"></i> <span id="btnEndLabel">Kết thúc</span>
           </button>
         </div>
 
-        <!-- Nút Thông dịch viên AI 2 chiều -->
-        <button onclick="openTranslateModal()" class="w-full bg-gradient-to-r from-indigo-700 to-blue-700 hover:from-indigo-600 hover:to-blue-600 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm mb-2 border border-indigo-500">
-          <i class="fa-solid fa-language text-base"></i> Thông dịch viên Trực tiếp (Google Translate)
+        <!-- Nút Thông dịch viên AI 2 chiều (dùng trong lúc chở khách, đặt gần Bắt đầu/Kết thúc cho tiện thao tác) -->
+        <button onclick="openTranslateModal()" class="w-full bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm mb-2 border border-indigo-500">
+          <i class="fa-solid fa-language"></i> <span id="translateBtnLabel">Thông dịch viên AI 2 chiều</span>
         </button>
 
         <!-- Nút thanh toán -->
         <div class="grid grid-cols-2 gap-2.5 mb-2">
           <button id="btnCashPay" onclick="payCash()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-xs">
-            <i class="fa-solid fa-money-bill-wave"></i> Trả tiền mặt
+            <i class="fa-solid fa-money-bill-wave"></i> <span id="cashPayLabel">Trả tiền mặt</span>
           </button>
-          <button id="btnQrPay" onclick="payTransfer()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-xs">
-            <i class="fa-solid fa-qrcode"></i> Chuyển khoản QR
+          <button id="btnQrPay" onclick="payTransfer()" class="bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-xs">
+            <i class="fa-solid fa-qrcode"></i> <span id="qrPayLabel">Chuyển khoản QR</span>
           </button>
         </div>
 
@@ -245,30 +245,47 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Tóm tắt doanh thu -->
-      <div class="bg-blue-50/70 border border-blue-100 rounded-2xl p-2.5 flex justify-between items-center text-xs">
-        <span class="text-gray-600 font-medium"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> Doanh thu hôm nay:</span>
-        <span id="quickTodayFare" class="font-bold text-blue-700 text-sm">0 đ</span>
+    <!-- Tóm tắt doanh thu hôm nay: nằm NGOÀI vùng cuộn nên luôn cố định hiển thị, không bao giờ bị khuất -->
+    <div class="shrink-0 z-20 bg-blue-50/95 backdrop-blur border-t border-blue-100 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] px-3.5 py-2.5 flex justify-between items-center text-xs" style="padding-bottom: max(0.625rem, env(safe-area-inset-bottom));">
+      <span class="text-gray-600 font-medium"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> Doanh thu hôm nay:</span>
+      <div class="flex items-center gap-2">
+        <span id="quickTodayFare" data-real="0 đ" class="font-bold text-blue-700 text-sm">••••••</span>
+        <button onclick="toggleRevenueVisibility()" id="btnToggleRevenue" title="Hiện/ẩn doanh thu" class="text-gray-400 hover:text-blue-600 transition p-1 active:scale-90">
+          <i class="fa-solid fa-eye-slash text-xs"></i>
+        </button>
       </div>
     </div>
 
-    <!-- ================= MODAL THÔNG DỊCH VIÊN HỘI THOẠI TRỰC TIẾP ================= -->
+    <!-- ================= MODAL THÔNG DỊCH VIÊN AI 2 CHIỀU ================= -->
+    <!-- ================= HỘP THOẠI THÔNG BÁO RIÊNG CỦA APP (thay cho alert/confirm/prompt mặc định của trình duyệt) ================= -->
+    <div id="customDialogModal" class="fixed inset-0 bg-black/60 z-[200] hidden items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-4">
+        <p id="customDialogMessage" class="text-sm text-gray-800 whitespace-pre-line mb-3 leading-relaxed"></p>
+        <input id="customDialogInput" type="text" class="hidden w-full border rounded-lg p-2 mb-3 outline-none focus:ring-1 focus:ring-blue-500" onkeydown="if(event.key==='Enter') _resolveDialog(true)">
+        <div class="flex gap-2 justify-end">
+          <button id="customDialogCancelBtn" onclick="_resolveDialog(false)" class="hidden px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-100 transition">Huỷ</button>
+          <button id="customDialogOkBtn" onclick="_resolveDialog(true)" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition">OK</button>
+        </div>
+      </div>
+    </div>
+
     <div id="translateModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-end sm:items-center justify-center p-3 hidden">
-      <div class="bg-white rounded-3xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3 animate-fade-in relative max-h-[92vh]">
+      <div class="bg-white rounded-3xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3 animate-fade-in relative max-h-[90vh]">
         <div class="flex justify-between items-center border-b pb-2">
           <div class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-            <i class="fa-solid fa-comments text-indigo-600 text-base"></i> DỊCH HỘI THOẠI TRỰC TIẾP
+            <i class="fa-solid fa-language text-indigo-600 text-base"></i> THÔNG DỊCH VIÊN AI
           </div>
-          <button onclick="closeTranslateModal()" class="text-gray-400 hover:text-gray-600 text-lg p-1">
+          <button onclick="closeTranslateModal()" class="text-gray-400 hover:text-gray-600 text-lg">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
-        <!-- Chọn ngôn ngữ khách đối thoại -->
-        <div class="flex items-center justify-between bg-slate-100 p-2 rounded-xl text-xs">
-          <span class="font-bold text-slate-700">Khách nói:</span>
-          <select id="foreignLangSelect" class="border rounded-lg px-2 py-1 bg-white font-bold text-indigo-700 outline-none">
+        <!-- Chọn ngôn ngữ khách đối thoại + nút mở Google Dịch (app thật) -->
+        <div class="flex items-center justify-between bg-slate-100 p-2 rounded-xl text-xs gap-2">
+          <span class="font-bold text-slate-700 shrink-0">Ngôn ngữ khách:</span>
+          <select id="foreignLangSelect" class="border rounded-lg px-2 py-1 bg-white font-bold text-indigo-700 outline-none flex-1 min-w-0">
             <option value="fr-FR|fr|Tiếng Pháp">🇫🇷 Tiếng Pháp (Français)</option>
             <option value="en-US|en|Tiếng Anh">🇬🇧 Tiếng Anh (English)</option>
             <option value="zh-CN|zh|Tiếng Trung">🇨🇳 Tiếng Trung (中文)</option>
@@ -276,43 +293,36 @@
             <option value="ja-JP|ja|Tiếng Nhật">🇯🇵 Tiếng Nhật (日本語)</option>
             <option value="ru-RU|ru|Tiếng Nga">🇷🇺 Tiếng Nga (Русский)</option>
           </select>
+          <button onclick="openGoogleTranslateApp()" title="Mở app Google Dịch thật (chế độ Trò chuyện)" class="shrink-0 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 w-7 h-7 rounded-lg flex items-center justify-center transition active:scale-95">
+            <i class="fa-brands fa-google text-[11px]"></i>
+          </button>
         </div>
 
-        <!-- Khung hiển thị nội dung dịch theo phong cách Live Stream Text -->
+        <!-- Khung hiển thị nội dung dịch -->
         <div class="space-y-2 flex-1 overflow-y-auto max-h-56 pr-1 text-xs">
           <!-- Phía tài xế -->
-          <div id="boxDriver" class="bg-blue-50/90 border border-blue-200 p-2.5 rounded-2xl transition">
-            <div class="flex justify-between items-center mb-0.5">
-              <span class="text-[10px] font-bold text-blue-700">🇻🇳 Tài xế (Tiếng Việt):</span>
-              <span id="badgeDriverStatus" class="hidden text-[9px] bg-blue-600 text-white px-1.5 py-0.2 rounded-full animate-pulse">Đang nghe...</span>
-            </div>
-            <div id="driverOriginalText" class="text-slate-800 italic min-h-[18px]">Bấm micro xanh hoặc bật Chế độ Tự Động để nói...</div>
-            <div id="driverTranslatedText" class="text-indigo-800 font-bold mt-1 border-t border-blue-100 pt-1 min-h-[18px]">---</div>
+          <div class="bg-blue-50 border border-blue-200 p-2.5 rounded-2xl">
+            <span class="text-[10px] font-bold text-blue-700 block mb-0.5">Tài xế (Tiếng Việt):</span>
+            <div id="driverOriginalText" class="text-slate-800 italic">Bấm micro xanh bên dưới để bắt đầu nói chuyện trực tiếp...</div>
+            <div id="driverTranslatedText" class="text-indigo-800 font-bold mt-1 border-t border-blue-100 pt-1">---</div>
           </div>
           <!-- Phía khách -->
-          <div id="boxGuest" class="bg-amber-50/90 border border-amber-200 p-2.5 rounded-2xl transition">
-            <div class="flex justify-between items-center mb-0.5">
-              <span class="text-[10px] font-bold text-amber-800">🌐 Khách hàng:</span>
-              <span id="badgeGuestStatus" class="hidden text-[9px] bg-amber-600 text-white px-1.5 py-0.2 rounded-full animate-pulse">Đang nghe...</span>
-            </div>
-            <div id="guestOriginalText" class="text-slate-800 italic min-h-[18px]">Bấm micro vàng đưa khách nói...</div>
-            <div id="guestTranslatedText" class="text-emerald-800 font-bold mt-1 border-t border-amber-100 pt-1 min-h-[18px]">---</div>
+          <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-2xl">
+            <span class="text-[10px] font-bold text-amber-800 block mb-0.5">Khách hàng:</span>
+            <div id="guestOriginalText" class="text-slate-800 italic">Bấm micro vàng đưa khách nói chuyện trực tiếp...</div>
+            <div id="guestTranslatedText" class="text-emerald-800 font-bold mt-1 border-t border-amber-100 pt-1">---</div>
           </div>
         </div>
 
-        <!-- Nút kích hoạt Chế độ Tự Động Hội Thoại 2 Chiều (Google Translate Live Mode) -->
-        <button id="btnAutoConversation" onclick="toggleAutoConversation()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl text-xs shadow transition active:scale-95 flex items-center justify-center gap-2 border border-slate-700">
-          <i class="fa-solid fa-arrows-rotate text-emerald-400"></i>
-          <span id="autoConversationLabel">Bật Chế độ Tự Động Hội Thoại (Live Auto)</span>
-        </button>
+        <p class="text-[10px] text-gray-400 text-center -mt-1">Chế độ Trực tiếp: bấm 1 lần, nói xong tự dịch & đọc, rồi tự nghe câu tiếp theo. Bấm lại để dừng.</p>
 
-        <!-- 2 Nút bấm nói thủ công từng bên -->
+        <!-- 2 Nút bấm nói 2 chiều (chế độ Trực tiếp: bấm để bật/tắt, không cần bấm lại từng câu) -->
         <div class="grid grid-cols-2 gap-2 pt-1 border-t">
-          <button id="btnDriverSpeak" onclick="startTranslatingSpeech('driver')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1">
+          <button id="btnDriverSpeak" onclick="toggleLiveTranslate('driver')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1">
             <i class="fa-solid fa-microphone text-sm"></i>
             <span>Tài xế nói (VN)</span>
           </button>
-          <button id="btnGuestSpeak" onclick="startTranslatingSpeech('guest')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1">
+          <button id="btnGuestSpeak" onclick="toggleLiveTranslate('guest')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1">
             <i class="fa-solid fa-microphone text-sm"></i>
             <span>Khách nói (Ngoại quốc)</span>
           </button>
@@ -462,6 +472,51 @@
   </div>
 
   <script>
+    // ================= HỘP THOẠI THÔNG BÁO RIÊNG CỦA APP =================
+    // Thay thế alert()/confirm()/prompt() mặc định của trình duyệt (vốn luôn hiện kèm dòng "tên-miền cho biết")
+    // bằng hộp thoại tự thiết kế, chỉ hiện đúng nội dung thông báo của app.
+    let _dialogResolve = null;
+    let _dialogType = 'alert';
+
+    function _openDialog(message, type, defaultValue) {
+      return new Promise((resolve) => {
+        _dialogResolve = resolve;
+        _dialogType = type;
+        document.getElementById('customDialogMessage').innerText = message;
+        const input = document.getElementById('customDialogInput');
+        const cancelBtn = document.getElementById('customDialogCancelBtn');
+        input.classList.toggle('hidden', type !== 'prompt');
+        cancelBtn.classList.toggle('hidden', type === 'alert');
+        if (type === 'prompt') input.value = defaultValue || '';
+        const modal = document.getElementById('customDialogModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        if (type === 'prompt') setTimeout(() => input.focus(), 50);
+      });
+    }
+
+    function _resolveDialog(confirmed) {
+      const modal = document.getElementById('customDialogModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      if (!_dialogResolve) return;
+      let result;
+      if (_dialogType === 'prompt') {
+        result = confirmed ? document.getElementById('customDialogInput').value : null;
+      } else if (_dialogType === 'confirm') {
+        result = confirmed;
+      } else {
+        result = undefined;
+      }
+      const resolveFn = _dialogResolve;
+      _dialogResolve = null;
+      resolveFn(result);
+    }
+
+    function customAlert(message) { return _openDialog(message, 'alert'); }
+    function customConfirm(message) { return _openDialog(message, 'confirm'); }
+    function customPrompt(message, defaultValue) { return _openDialog(message, 'prompt', defaultValue); }
+
     let currentMode = 'meter';
     let isTripRunning = false;
     let watchId = null;
@@ -469,7 +524,7 @@
     let totalKm = 0;
     let secondsElapsed = 0;
     let prevPosition = null;
-    let tripStartTimestamp = null;
+    let tripStartTimestamp = null; // mốc thời gian thực (ms) lúc bấm "Bắt đầu", dùng để tính giờ chính xác kể cả khi tab bị nền hoá
 
     let currentStartCoords = null;
     let currentEndCoords = null;
@@ -480,6 +535,7 @@
     let activeProfileIndex = 0;
     let editingProfileIndex = 0;
 
+    // Cấu hình ngôn ngữ & giọng đọc khách
     let currentGuestLang = 'vi';
     const guestGreetings = {
       vi: { welcomeText: "Xin chào quý khách!", welcomeSub: "Welcome", thankText: "Xin cám ơn quý khách!", thankSub: "Thank you!", speechWelcome: "Xin chào quý khách, chúc quý khách chuyến đi vui vẻ", speechThank: "Xin cám ơn quý khách và hẹn gặp lại", code: "vi-VN" },
@@ -489,208 +545,262 @@
       ko: { welcomeText: "환영합니다 (Welcome)!", welcomeSub: "Welcome", thankText: "감사합니다 (Thank you)!", thankSub: "See you again", speechWelcome: "환영합니다. 즐거운 여행 되세요", speechThank: "감사합니다. 안녕히 가세요", code: "ko-KR" }
     };
 
-    // ================= DỊCH HỘI THOẠI TRỰC TIẾP (GOOGLE TRANSLATE LIVE CONVERSATION) =================
-    let cachedVoices = {};
-    let activeTranslateRecog = null;
-    let isAutoConversationRunning = false;
-    let autoCurrentSpeaker = 'driver'; // 'driver' hoặc 'guest'
+    // ================= TÍNH NĂNG THÔNG DỊCH VIÊN AI 2 CHIỀU =================
+    // ================= ẨN/HIỆN DOANH THU (BẢO MẬT RIÊNG TƯ) =================
+    let isRevenueVisible = false;
 
-    function preloadVoices() {
-      if (!('speechSynthesis' in window)) return;
-      const voices = window.speechSynthesis.getVoices();
-      voices.forEach(v => {
-        const langKey = v.lang.toLowerCase().substring(0, 2);
-        if (!cachedVoices[langKey]) cachedVoices[langKey] = v;
-      });
+    function toggleRevenueVisibility() {
+      isRevenueVisible = !isRevenueVisible;
+      const span = document.getElementById('quickTodayFare');
+      const icon = document.querySelector('#btnToggleRevenue i');
+      if (isRevenueVisible) {
+        span.innerText = span.dataset.real;
+        icon.className = 'fa-solid fa-eye text-xs';
+      } else {
+        span.innerText = '••••••';
+        icon.className = 'fa-solid fa-eye-slash text-xs';
+      }
     }
 
     function openTranslateModal() {
-      preloadVoices();
       document.getElementById('translateModal').classList.remove('hidden');
     }
 
     function closeTranslateModal() {
-      stopAllTranslationSpeech();
+      stopLiveTranslate(); // đóng modal thì dừng luôn micro đang nghe, tránh nghe ngầm khi không cần
       document.getElementById('translateModal').classList.add('hidden');
     }
 
-    function stopAllTranslationSpeech() {
-      if (activeTranslateRecog) {
-        try { activeTranslateRecog.abort(); } catch(e) {}
-        activeTranslateRecog = null;
-      }
-      isAutoConversationRunning = false;
-      resetLiveUIBadges();
-      const autoBtn = document.getElementById('btnAutoConversation');
-      if (autoBtn) {
-        autoBtn.className = "w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl text-xs shadow transition active:scale-95 flex items-center justify-center gap-2 border border-slate-700";
-        document.getElementById('autoConversationLabel').innerText = "Bật Chế độ Tự Động Hội Thoại (Live Auto)";
-      }
-    }
-
-    function resetLiveUIBadges() {
-      document.getElementById('badgeDriverStatus').classList.add('hidden');
-      document.getElementById('badgeGuestStatus').classList.add('hidden');
-      document.getElementById('btnDriverSpeak').innerHTML = `<i class="fa-solid fa-microphone text-sm"></i><span>Tài xế nói (VN)</span>`;
-      document.getElementById('btnGuestSpeak').innerHTML = `<i class="fa-solid fa-microphone text-sm"></i><span>Khách nói (Ngoại quốc)</span>`;
-    }
-
-    function speakTextDirect(text, langCode, onCompleteCallback = null) {
-      if (!('speechSynthesis' in window) || !text) {
-        if (onCompleteCallback) onCompleteCallback();
-        return;
-      }
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = langCode;
-      utterance.rate = 1.0;
-      const shortCode = langCode.toLowerCase().substring(0, 2);
-      if (cachedVoices[shortCode]) {
-        utterance.voice = cachedVoices[shortCode];
+    // Mở app Google Dịch thật trên điện thoại (chế độ Trò chuyện/Live có sẵn của Google) khi tài xế muốn dùng bản chính chủ.
+    // Lưu ý: Google không cung cấp cách nhúng thẳng tính năng "Dịch trực tiếp" của app họ vào trang web khác,
+    // nên nút này chỉ mở nhanh sang app đó (Android); trên iOS/máy tính sẽ mở trang translate.google.com.
+    function openGoogleTranslateApp() {
+      const ua = navigator.userAgent || '';
+      if (/Android/i.test(ua)) {
+        const fallback = encodeURIComponent('https://play.google.com/store/apps/details?id=com.google.android.apps.translate');
+        window.location.href = `intent://#Intent;package=com.google.android.apps.translate;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;S.browser_fallback_url=${fallback};end`;
       } else {
-        const voices = window.speechSynthesis.getVoices();
-        const matched = voices.find(v => v.lang.toLowerCase().includes(shortCode));
-        if (matched) utterance.voice = matched;
-      }
-      
-      utterance.onend = () => {
-        if (onCompleteCallback) onCompleteCallback();
-      };
-      utterance.onerror = () => {
-        if (onCompleteCallback) onCompleteCallback();
-      };
-
-      window.speechSynthesis.speak(utterance);
-    }
-
-    async function translateTextOnline(text, fromLang, toLang) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-      try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`;
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data && data[0]) {
-          return data[0].map(item => item[0]).join('');
-        }
-        throw new Error("Phản hồi không hợp lệ");
-      } catch (e) {
-        clearTimeout(timeoutId);
-        console.warn("Lỗi dịch hoặc mạng trễ:", e);
-        return text;
+        window.open('https://translate.google.com/', '_blank');
       }
     }
 
-    // Khởi động nhận diện & dịch thuật trực tiếp
-    function startTranslatingSpeech(speaker, isAuto = false) {
+    // ================= CHẾ ĐỘ DỊCH TRỰC TIẾP (LIVE): bấm 1 lần, nghe-dịch-đọc-nghe lại liên tục, không cần bấm lại từng câu =================
+    let liveModeSpeaker = null;  // 'driver' | 'guest' | null (đang tắt)
+    let currentLiveRecognition = null;
+
+    function toggleLiveTranslate(speaker) {
+      if (liveModeSpeaker === speaker) {
+        stopLiveTranslate();
+      } else {
+        stopLiveTranslate(); // đảm bảo chỉ 1 bên nghe tại 1 thời điểm, tránh 2 mic chồng nhau
+        startLiveTranslate(speaker);
+      }
+    }
+
+    function startLiveTranslate(speaker) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) return alert("Trình duyệt không hỗ trợ nhận diện giọng nói.");
+      if (!SpeechRecognition) { customAlert("Trình duyệt không hỗ trợ nhận diện giọng nói."); return; }
+      liveModeSpeaker = speaker;
+      updateLiveButtonUI();
+      runLiveRecognitionCycle(speaker);
+    }
 
-      if (activeTranslateRecog) {
-        try { activeTranslateRecog.abort(); } catch(e) {}
+    function stopLiveTranslate() {
+      liveModeSpeaker = null;
+      if (currentLiveRecognition) {
+        try {
+          currentLiveRecognition.onend = null; // gỡ auto-restart trước khi dừng hẳn
+          currentLiveRecognition.onerror = null;
+          currentLiveRecognition.stop();
+        } catch (e) {}
+        currentLiveRecognition = null;
       }
+      updateLiveButtonUI();
+    }
 
-      resetLiveUIBadges();
+    function updateLiveButtonUI() {
+      const dBtn = document.getElementById('btnDriverSpeak');
+      const gBtn = document.getElementById('btnGuestSpeak');
+      if (!dBtn || !gBtn) return;
+      const idleDriverHtml = '<i class="fa-solid fa-microphone text-sm"></i><span>Tài xế nói (VN)</span>';
+      const idleGuestHtml = '<i class="fa-solid fa-microphone text-sm"></i><span>Khách nói (Ngoại quốc)</span>';
+      const liveHtml = '<i class="fa-solid fa-microphone-lines fa-beat-fade text-sm"></i><span>🔴 Đang nghe trực tiếp...</span>';
 
+      dBtn.innerHTML = liveModeSpeaker === 'driver' ? liveHtml : idleDriverHtml;
+      dBtn.className = liveModeSpeaker === 'driver'
+        ? "bg-rose-600 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1"
+        : "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1";
+
+      gBtn.innerHTML = liveModeSpeaker === 'guest' ? liveHtml : idleGuestHtml;
+      gBtn.className = liveModeSpeaker === 'guest'
+        ? "bg-rose-600 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1"
+        : "bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1";
+    }
+
+    function runLiveRecognitionCycle(speaker) {
+      if (liveModeSpeaker !== speaker) return; // đã bị tắt trước khi kịp chạy vòng tiếp theo
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const selVal = document.getElementById('foreignLangSelect').value.split('|');
-      const foreignCode = selVal[0];
-      const foreignLangKey = selVal[1];
+      const foreignCode = selVal[0]; // vd: fr-FR
+      const foreignLangKey = selVal[1]; // vd: fr
 
       const recog = new SpeechRecognition();
       recog.continuous = false;
-      recog.interimResults = true; // Bật để hiện chữ thời gian thực như Google Translate
-      recog.maxAlternatives = 1;
+      recog.interimResults = true; // hiện chữ ngay khi đang nói, cảm giác phản hồi nhanh như "Live"
       recog.lang = speaker === 'driver' ? 'vi-VN' : foreignCode;
+      currentLiveRecognition = recog;
 
-      activeTranslateRecog = recog;
-      const isDriver = speaker === 'driver';
-
-      const originalEl = document.getElementById(isDriver ? 'driverOriginalText' : 'guestOriginalText');
-      const transEl = document.getElementById(isDriver ? 'driverTranslatedText' : 'guestTranslatedText');
-      const badgeEl = document.getElementById(isDriver ? 'badgeDriverStatus' : 'badgeGuestStatus');
-      const btn = document.getElementById(isDriver ? 'btnDriverSpeak' : 'btnGuestSpeak');
-
-      badgeEl.classList.remove('hidden');
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sm"></i> Đang nghe...`;
-      originalEl.innerText = "Đang lắng nghe...";
-
-      let finalSpokenText = '';
+      const originalTextEl = document.getElementById(speaker === 'driver' ? 'driverOriginalText' : 'guestOriginalText');
+      const translatedTextEl = document.getElementById(speaker === 'driver' ? 'driverTranslatedText' : 'guestTranslatedText');
 
       recog.onresult = (event) => {
-        let interimTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalSpokenText += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
-          }
+        let interim = '', final = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) final += event.results[i][0].transcript;
+          else interim += event.results[i][0].transcript;
         }
-        originalEl.innerText = `"${finalSpokenText || interimTranscript}"`;
-      };
-
-      recog.onend = async () => {
-        resetLiveUIBadges();
-        const textToTranslate = finalSpokenText.trim();
-        if (textToTranslate) {
-          transEl.innerText = "⚡ Đang dịch trực tiếp...";
-          const fromLang = isDriver ? 'vi' : foreignLangKey;
-          const toLang = isDriver ? foreignLangKey : 'vi';
-          const targetVoiceCode = isDriver ? foreignCode : 'vi-VN';
-
-          const translated = await translateTextOnline(textToTranslate, fromLang, toLang);
-          transEl.innerText = `👉 ${translated}`;
-
-          // Tự động phát âm thanh, sau khi phát xong nếu đang ở Auto Mode thì đảo lượt cho người tiếp theo
-          speakTextDirect(translated, targetVoiceCode, () => {
-            if (isAutoConversationRunning) {
-              autoCurrentSpeaker = isDriver ? 'guest' : 'driver';
-              setTimeout(() => {
-                if (isAutoConversationRunning) startTranslatingSpeech(autoCurrentSpeaker, true);
-              }, 400);
-            }
-          });
-        } else {
-          if (isAutoConversationRunning) {
-            setTimeout(() => {
-              if (isAutoConversationRunning) startTranslatingSpeech(autoCurrentSpeaker, true);
-            }, 500);
-          }
+        if (interim) originalTextEl.innerText = `"${interim}"`;
+        if (final) {
+          originalTextEl.innerText = `"${final}"`;
+          handleLiveFinalResult(final, speaker, foreignCode, foreignLangKey, translatedTextEl);
         }
       };
 
       recog.onerror = (e) => {
-        resetLiveUIBadges();
-        if (isAutoConversationRunning && e.error !== 'aborted') {
-          setTimeout(() => {
-            if (isAutoConversationRunning) startTranslatingSpeech(autoCurrentSpeaker, true);
-          }, 800);
+        // "no-speech" (im lặng) hoặc bị hệ thống ngắt giữa chừng là bình thường trong chế độ liên tục — tự nghe lại
+        if (liveModeSpeaker === speaker) {
+          setTimeout(() => runLiveRecognitionCycle(speaker), e.error === 'no-speech' ? 300 : 800);
         }
       };
 
+      recog.onend = () => {
+        // Vòng nghe vừa kết thúc: nếu vẫn đang bật chế độ Trực tiếp cho người này thì tự động nghe lại ngay,
+        // tạo cảm giác "liên tục" giống ứng dụng Google Dịch, không cần bấm lại nút mỗi câu.
+        if (liveModeSpeaker === speaker) {
+          setTimeout(() => runLiveRecognitionCycle(speaker), 250);
+        }
+      };
+
+      recog.start();
+    }
+
+    async function handleLiveFinalResult(spokenText, speaker, foreignCode, foreignLangKey, translatedTextEl) {
+      translatedTextEl.innerText = "Đang dịch...";
+      let translated, targetVoiceCode;
+      if (speaker === 'driver') {
+        translated = await translateTextOnline(spokenText, 'vi', foreignLangKey);
+        targetVoiceCode = foreignCode;
+      } else {
+        translated = await translateTextOnline(spokenText, foreignLangKey, 'vi');
+        targetVoiceCode = 'vi-VN';
+      }
+      translatedTextEl.innerText = `👉 ${translated}`;
+      speakTextDirect(translated, targetVoiceCode);
+    }
+
+    // ================= DỊCH NHANH: BỘ CỤM TỪ TAXI THÔNG DỤNG (TRA CỨU TỨC THÌ, KHÔNG CẦN MẠNG) =================
+    // Các câu giao tiếp phổ biến nhất giữa tài xế và khách được dịch sẵn, chính xác hơn máy dịch tự động
+    // và trả lời ngay lập tức (0 độ trễ mạng) thay vì phải gọi API mỗi lần.
+    const quickPhraseBank = [
+      { vi: "Xin chào", en: "Hello", fr: "Bonjour", zh: "你好", ko: "안녕하세요" },
+      { vi: "Cảm ơn", en: "Thank you", fr: "Merci", zh: "谢谢", ko: "감사합니다" },
+      { vi: "Tạm biệt", en: "Goodbye", fr: "Au revoir", zh: "再见", ko: "안녕히 가세요" },
+      { vi: "Bạn đi đâu", en: "Where are you going?", fr: "Où allez-vous ?", zh: "你要去哪里?", ko: "어디로 가세요?" },
+      { vi: "Giá bao nhiêu", en: "How much does it cost?", fr: "Combien ça coûte ?", zh: "多少钱?", ko: "얼마입니까?" },
+      { vi: "Đợi tôi một chút", en: "Please wait a moment", fr: "Attendez un instant, s'il vous plaît", zh: "请稍等一下", ko: "잠시만 기다려 주세요" },
+      { vi: "Chúng ta đã đến nơi", en: "We have arrived", fr: "Nous sommes arrivés", zh: "我们到了", ko: "도착했습니다" },
+      { vi: "Vui lòng thắt dây an toàn", en: "Please fasten your seatbelt", fr: "Veuillez attacher votre ceinture", zh: "请系好安全带", ko: "안전벨트를 매주세요" },
+      { vi: "Bạn có thể trả bằng tiền mặt hoặc chuyển khoản", en: "You can pay by cash or bank transfer", fr: "Vous pouvez payer en espèces ou par virement", zh: "您可以用现金或转账支付", ko: "현금이나 계좌이체로 결제하실 수 있습니다" },
+      { vi: "Chúc bạn một ngày tốt lành", en: "Have a nice day", fr: "Bonne journée", zh: "祝你今天愉快", ko: "좋은 하루 되세요" },
+      { vi: "Không có gì", en: "You're welcome", fr: "De rien", zh: "不客气", ko: "천만에요" },
+      { vi: "Xin lỗi tôi không hiểu", en: "Sorry, I don't understand", fr: "Désolé, je ne comprends pas", zh: "对不起，我不明白", ko: "죄송합니다, 이해가 안 돼요" }
+    ];
+
+    function stripVnTones(str) {
+      str = (str || '').toLowerCase();
+      str = str.replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a');
+      str = str.replace(/[èéẹẻẽêềếệểễ]/g, 'e');
+      str = str.replace(/[ìíịỉĩ]/g, 'i');
+      str = str.replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o');
+      str = str.replace(/[ùúụủũưừứựửữ]/g, 'u');
+      str = str.replace(/[ỳýỵỷỹ]/g, 'y');
+      str = str.replace(/đ/g, 'd');
+      return str.replace(/[^a-z0-9\s]/g, '').trim().replace(/\s+/g, ' ');
+    }
+
+    function normalizeForeignText(str) {
+      return (str || '').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').trim().replace(/\s+/g, ' ');
+    }
+
+    // Xây sẵn 2 bảng tra cứu (chạy 1 lần lúc tải trang) để tra nhanh theo cả 2 chiều
+    const quickPhraseByVi = {};       // "cam on" -> { en, fr, zh, ko }
+    const quickPhraseByForeign = {};  // "en|thank you" -> { vi, en, fr, zh, ko } (dùng khi khách nói)
+    quickPhraseBank.forEach(entry => {
+      quickPhraseByVi[stripVnTones(entry.vi)] = entry;
+      ['en', 'fr', 'zh', 'ko'].forEach(lang => {
+        quickPhraseByForeign[`${lang}|${normalizeForeignText(entry[lang])}`] = entry;
+      });
+    });
+
+    function lookupQuickPhrase(text, fromLang, toLang) {
+      if (fromLang === 'vi' && quickPhraseByVi[stripVnTones(text)]) {
+        return quickPhraseByVi[stripVnTones(text)][toLang] || null;
+      }
+      if (toLang === 'vi') {
+        const match = quickPhraseByForeign[`${fromLang}|${normalizeForeignText(text)}`];
+        return match ? match.vi : null;
+      }
+      return null; // không hỗ trợ tra nhanh giữa 2 ngôn ngữ nước ngoài với nhau, sẽ gọi API dịch
+    }
+
+    // Bộ nhớ tạm trong phiên làm việc: câu đã dịch rồi thì lần sau hỏi lại trả lời ngay, không gọi mạng nữa
+    const translationCache = new Map();
+
+    async function translateTextOnline(text, fromLang, toLang) {
+      const cacheKey = `${fromLang}|${toLang}|${text.trim().toLowerCase()}`;
+      if (translationCache.has(cacheKey)) return translationCache.get(cacheKey);
+
+      // Bước 1: Tra cụm từ thông dụng — trả lời tức thì, không cần mạng
+      const quickResult = lookupQuickPhrase(text, fromLang, toLang);
+      if (quickResult) {
+        translationCache.set(cacheKey, quickResult);
+        return quickResult;
+      }
+
+      // Bước 2: Gọi dịch qua mạng, có giới hạn thời gian chờ 5 giây để không bị "treo" lâu khi mạng yếu
       try {
-        recog.start();
-      } catch (err) {
-        console.warn(err);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(text)}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data && data[0]) {
+          const translated = data[0].map(item => item[0]).join('');
+          translationCache.set(cacheKey, translated);
+          return translated;
+        }
+        throw new Error("Phản hồi dịch không hợp lệ");
+      } catch (e) {
+        console.warn("Lỗi dịch:", e);
+        if (e.name === 'AbortError') {
+          return `⚠️ Dịch quá chậm (mạng yếu), thử lại — nội dung gốc: ${text}`;
+        }
+        return `⚠️ Không thể dịch (kiểm tra kết nối mạng) — nội dung gốc: ${text}`;
       }
     }
 
-    function toggleAutoConversation() {
-      isAutoConversationRunning = !isAutoConversationRunning;
-      const autoBtn = document.getElementById('btnAutoConversation');
-      const label = document.getElementById('autoConversationLabel');
-
-      if (isAutoConversationRunning) {
-        autoBtn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl text-xs shadow transition active:scale-95 flex items-center justify-center gap-2 animate-pulse border border-rose-500";
-        label.innerText = "Dừng Chế độ Tự Động Hội Thoại";
-        autoCurrentSpeaker = 'driver';
-        startTranslatingSpeech('driver', true);
-      } else {
-        stopAllTranslationSpeech();
-      }
+    function speakTextDirect(text, langCode) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = langCode;
+      utterance.rate = 0.95;
+      const voices = window.speechSynthesis.getVoices();
+      const matched = voices.find(v => v.lang.toLowerCase().includes(langCode.toLowerCase().substring(0, 2)));
+      if (matched) utterance.voice = matched;
+      window.speechSynthesis.speak(utterance);
     }
 
     // ================= TRỢ LÝ GIỌNG NÓI ĐIỀU KHIỂN XE AI =================
@@ -721,7 +831,7 @@
 
     function toggleVoiceAI() {
       if (!recognition) initVoiceAI();
-      if (!recognition) return alert("Trình duyệt chưa hỗ trợ nhận diện giọng nói.");
+      if (!recognition) { customAlert("Trình duyệt chưa hỗ trợ nhận diện giọng nói."); return; }
       if (isVoiceAIActive) stopVoiceAI(); else startVoiceAI();
     }
 
@@ -768,7 +878,38 @@
       window.speechSynthesis.cancel();
       const langObj = guestGreetings[currentGuestLang] || guestGreetings['vi'];
       const textToSpeak = type === 'welcome' ? langObj.speechWelcome : langObj.speechThank;
-      speakTextDirect(textToSpeak, langObj.code);
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = langObj.code;
+      utterance.rate = 0.95;
+      const voices = window.speechSynthesis.getVoices();
+      const matched = voices.find(v => v.lang.toLowerCase().includes(langObj.code.toLowerCase().substring(0, 2)));
+      if (matched) utterance.voice = matched;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // ================= DỊCH GIAO DIỆN CÁC NÚT CHÍNH THEO NGÔN NGỮ KHÁCH ĐANG CHỌN =================
+    const uiTranslations = {
+      vi: { start: 'Bắt đầu', running: 'Đang chạy...', end: 'Kết thúc', translate: 'Thông dịch viên AI 2 chiều', cashPay: 'Trả tiền mặt', qrPay: 'Chuyển khoản QR', fareLabel: 'Tổng cước', timeLabel: 'Thời gian', distanceLabel: 'Quãng đường', waitLabel: 'Cước chờ', meterTitle: 'Đồng hồ chuyến đi', agreedTitle: 'Cước thỏa thuận trọn gói' },
+      en: { start: 'Start', running: 'Running...', end: 'End', translate: 'Two-way AI Interpreter', cashPay: 'Pay Cash', qrPay: 'Pay by QR', fareLabel: 'Total Fare', timeLabel: 'Time', distanceLabel: 'Distance', waitLabel: 'Wait Fee', meterTitle: 'Trip Meter', agreedTitle: 'Agreed Fixed Fare' },
+      fr: { start: 'Démarrer', running: 'En cours...', end: 'Terminer', translate: 'Interprète IA bidirectionnel', cashPay: 'Payer en espèces', qrPay: 'Payer par QR', fareLabel: 'Tarif total', timeLabel: 'Durée', distanceLabel: 'Distance', waitLabel: "Frais d'attente", meterTitle: 'Compteur de trajet', agreedTitle: 'Tarif forfaitaire convenu' },
+      zh: { start: '开始', running: '行驶中...', end: '结束', translate: '双向AI翻译', cashPay: '现金支付', qrPay: '扫码支付', fareLabel: '总车费', timeLabel: '时间', distanceLabel: '里程', waitLabel: '等待费', meterTitle: '行程计价器', agreedTitle: '协议一口价' },
+      ko: { start: '출발', running: '주행 중...', end: '종료', translate: '양방향 AI 통역', cashPay: '현금 결제', qrPay: 'QR 결제', fareLabel: '총 요금', timeLabel: '시간', distanceLabel: '거리', waitLabel: '대기 요금', meterTitle: '주행 요금 미터기', agreedTitle: '협의된 고정 요금' }
+    };
+
+    function applyUILanguage(lang) {
+      const t = uiTranslations[lang] || uiTranslations.vi;
+      const setText = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+
+      setText('btnStartLabel', isTripRunning ? t.running : t.start);
+      setText('btnEndLabel', t.end);
+      setText('translateBtnLabel', t.translate);
+      setText('cashPayLabel', t.cashPay);
+      setText('qrPayLabel', t.qrPay);
+      setText('meterFareLabel', t.fareLabel);
+      setText('meterTimeLabel', t.timeLabel);
+      setText('meterDistanceLabel', t.distanceLabel);
+      setText('waitFareLabel', t.waitLabel);
+      setText('fareTitle', currentMode === 'meter' ? t.meterTitle : t.agreedTitle);
     }
 
     function setGuestLanguage(lang) {
@@ -781,6 +922,8 @@
             : "px-2 py-1 rounded-xl text-[10px] font-bold text-slate-500 hover:bg-white transition";
         }
       });
+      applyUILanguage(lang);
+      // Tự đồng bộ luôn select trong modal thông dịch
       const select = document.getElementById('foreignLangSelect');
       if (select) {
         for (let i = 0; i < select.options.length; i++) {
@@ -830,6 +973,9 @@
         if ('wakeLock' in navigator) {
           wakeLock = await navigator.wakeLock.request('screen');
           document.getElementById('wakeLockBadge').classList.remove('hidden');
+          // Trình duyệt tự huỷ Wake Lock khi tab bị ẩn (chuyển app khác) — không phải lỗi của app.
+          // QUAN TRỌNG: phải đặt lại wakeLock = null ở đây, nếu không biến này vẫn trỏ tới
+          // một WakeLockSentinel đã bị huỷ, khiến app tưởng lầm là "vẫn còn" và không xin lại khi quay về.
           wakeLock.addEventListener('release', () => {
             wakeLock = null;
             document.getElementById('wakeLockBadge').classList.add('hidden');
@@ -849,6 +995,9 @@
       }
     }
 
+    // Khi quay lại app (mở lại tab/mở lại từ app khác), tự xin lại Wake Lock nếu đang chạy chuyến,
+    // đồng thời cập nhật ngay đồng hồ thời gian cho khớp với thời gian thực đã trôi qua.
+    // Kiểm tra cả wakeLock.released (không chỉ dựa vào biến null) để chắc chắn không bỏ sót trường hợp nào.
     document.addEventListener('visibilitychange', async () => {
       if (document.visibilityState === 'visible' && isTripRunning) {
         if (!wakeLock || wakeLock.released) {
@@ -862,6 +1011,8 @@
       }
     });
 
+    // Một số trình duyệt/di động còn bắn thêm sự kiện focus khi quay lại app (ngoài visibilitychange),
+    // gọi lại cùng logic để tăng độ chắc chắn Wake Lock được khôi phục.
     window.addEventListener('focus', async () => {
       if (isTripRunning && (!wakeLock || wakeLock.released)) {
         await requestWakeLock();
@@ -949,11 +1100,11 @@
     });
 
     function getCurrentLocationForStart() {
-      if (!navigator.geolocation) return alert("Trình duyệt không hỗ trợ GPS.");
+      if (!navigator.geolocation) { customAlert("Trình duyệt không hỗ trợ GPS."); return; }
       navigator.geolocation.getCurrentPosition((pos) => {
         currentStartCoords = [pos.coords.latitude, pos.coords.longitude];
         document.getElementById('inputStart').value = "Vị trí GPS hiện tại";
-      }, () => alert("Không thể lấy vị trí."));
+      }, () => customAlert("Không thể lấy vị trí."));
     }
 
     function openGenericGoogleMaps() {
@@ -963,7 +1114,7 @@
     function openGoogleMapsDirect() {
       const startText = document.getElementById('inputStart').value.trim();
       const endText = document.getElementById('inputEnd').value.trim();
-      if (!endText) return alert("Vui lòng nhập điểm đến!");
+      if (!endText) { customAlert("Vui lòng nhập điểm đến!"); return; }
       let originParam = currentStartCoords ? `${currentStartCoords[0]},${currentStartCoords[1]}` : (startText !== "Vị trí GPS hiện tại" ? encodeURIComponent(startText) : "");
       let destParam = currentEndCoords ? `${currentEndCoords[0]},${currentEndCoords[1]}` : encodeURIComponent(endText);
       let gmapUrl = originParam ? `https://www.google.com/maps/dir/?api=1&origin=${originParam}&destination=${destParam}&travelmode=driving` : `https://www.google.com/maps/dir/?api=1&destination=${destParam}&travelmode=driving`;
@@ -972,14 +1123,15 @@
 
     function setStartButtonState(state) {
       const btnStart = document.getElementById('btnStart');
+      const t = uiTranslations[currentGuestLang] || uiTranslations.vi;
       if (state === 'running') {
         btnStart.disabled = true;
         btnStart.className = "bg-rose-500 opacity-40 cursor-not-allowed pointer-events-none text-white font-bold py-2.5 rounded-2xl shadow transition flex items-center justify-center gap-1.5 text-sm";
-        btnStart.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang chạy...';
+        btnStart.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span id="btnStartLabel">${t.running}</span>`;
       } else {
         btnStart.disabled = false;
         btnStart.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm";
-        btnStart.innerHTML = '<i class="fa-solid fa-play"></i> Bắt đầu';
+        btnStart.innerHTML = `<i class="fa-solid fa-play"></i> <span id="btnStartLabel">${t.start}</span>`;
       }
     }
 
@@ -998,9 +1150,9 @@
       document.getElementById('marqueeBanner').classList.add('hidden');
     }
 
-    function resetTripMeter() {
+    async function resetTripMeter() {
       if (isTripRunning) {
-        if (!confirm('Chuyến đi đang chạy, bạn có chắc muốn reset đồng hồ không?')) return;
+        if (!(await customConfirm('Chuyến đi đang chạy, bạn có chắc muốn reset đồng hồ không?'))) return;
         if (watchId) navigator.geolocation.clearWatch(watchId);
         clearInterval(timerInterval);
         isTripRunning = false;
@@ -1068,14 +1220,14 @@
         agreedBox.classList.add('hidden');
         agreedRoute.classList.add('hidden');
         meterUtility.classList.remove('hidden');
-        document.getElementById('fareTitle').innerText = "Tổng cước chuyến đi";
+        document.getElementById('fareTitle').innerText = (uiTranslations[currentGuestLang] || uiTranslations.vi).meterTitle;
       } else {
         agreeBtn.className = "flex-1 py-1.5 rounded-xl bg-amber-500 text-white shadow-sm transition";
         meterBtn.className = "flex-1 py-2 rounded-xl text-gray-600 transition";
         agreedBox.classList.remove('hidden');
         agreedRoute.classList.remove('hidden');
         meterUtility.classList.add('hidden');
-        document.getElementById('fareTitle').innerText = "Cước thỏa thuận trọn gói";
+        document.getElementById('fareTitle').innerText = (uiTranslations[currentGuestLang] || uiTranslations.vi).agreedTitle;
       }
       updateTotalFare();
     }
@@ -1129,6 +1281,9 @@
       setStartButtonState('running');
       document.getElementById('btnEnd').disabled = false;
 
+      // Tính giờ theo mốc thời gian thực (tripStartTimestamp) thay vì đếm cộng dồn từng giây,
+      // để khi trình duyệt bị throttle/nền hoá lúc chuyển app khác, đồng hồ vẫn tự "bắt kịp" đúng thời gian thực khi quay lại,
+      // thay vì bị dừng lại rồi chạy tiếp từ chỗ dừng (sai lệch so với thời gian thực đã trôi qua).
       timerInterval = setInterval(() => {
         secondsElapsed = Math.floor((Date.now() - tripStartTimestamp) / 1000);
         document.getElementById('displayTime').innerText = formatTime(secondsElapsed);
@@ -1139,13 +1294,15 @@
         watchId = navigator.geolocation.watchPosition((pos) => {
           const { latitude, longitude, accuracy } = pos.coords;
           const nowMs = Date.now();
-          if (accuracy > 30) return;
+          if (accuracy > 30) return; // bỏ điểm định vị kém chính xác
           if (prevPosition) {
             const d = getDistanceInKm(prevPosition.latitude, prevPosition.longitude, latitude, longitude);
             const dtSec = Math.max((nowMs - prevPosition.timeMs) / 1000, 1);
             const speedKmh = (d / dtSec) * 3600;
+            // Lọc điểm GPS nhảy: bỏ qua nếu tốc độ tính ra > 150km/h (không thực tế trong đô thị)
+            // hoặc quãng đường nhảy quá lớn trong thời gian quá ngắn (< 1 giây)
             if (speedKmh > 150) {
-              prevPosition = { latitude, longitude, timeMs: nowMs };
+              prevPosition = { latitude, longitude, timeMs: nowMs }; // vẫn cập nhật vị trí gốc, chỉ bỏ cộng dồn km
               return;
             }
             if (d > 0.005) {
@@ -1178,8 +1335,8 @@
       return `${hrs}:${mins}:${secs}`;
     }
 
-    function endTrip() {
-      if (!confirm("Bạn có thực sự muốn kết thúc chuyến đi để tính tiền không?")) return;
+    async function endTrip() {
+      if (!(await customConfirm("Bạn có thực sự muốn kết thúc chuyến đi để tính tiền không?"))) return;
       isTripRunning = false;
       if (watchId) navigator.geolocation.clearWatch(watchId);
       clearInterval(timerInterval);
@@ -1220,7 +1377,7 @@
 
     function payCash() {
       const { finalAmount } = finalizeTripData('Tiền mặt');
-      alert(`Đã hoàn thành chuyến đi! Khách thanh toán tiền mặt: ${formatNumberWithDots(finalAmount)} đ`);
+      customAlert(`Đã hoàn thành chuyến đi! Khách thanh toán tiền mặt: ${formatNumberWithDots(finalAmount)} đ`);
     }
 
     function payTransfer() {
@@ -1232,7 +1389,7 @@
       const bank = localStorage.getItem('cfg_bank');
       const acc = localStorage.getItem('cfg_acc');
       const name = encodeURIComponent(localStorage.getItem('cfg_name') || '');
-      if (!bank || !acc) return alert("Vui lòng vào Cài Đặt để nhập Số tài khoản!");
+      if (!bank || !acc) { customAlert("Vui lòng vào Cài Đặt để nhập Số tài khoản!"); return; }
 
       if (baseAmount === null) {
         extraAmount = parseFormattedNumber(document.getElementById('extraFee').value);
@@ -1336,9 +1493,9 @@
       renderProfileEditorCard();
     }
 
-    function removeCurrentProfile() {
+    async function removeCurrentProfile() {
       if (rateProfiles.length <= 1) return;
-      if (!confirm(`Bạn có chắc muốn xóa bảng cước này không?`)) return;
+      if (!(await customConfirm(`Bạn có chắc muốn xóa bảng cước này không?`))) return;
       rateProfiles.splice(editingProfileIndex, 1);
       if (editingProfileIndex >= rateProfiles.length) editingProfileIndex = rateProfiles.length - 1;
       if (activeProfileIndex >= rateProfiles.length) activeProfileIndex = 0;
@@ -1346,12 +1503,12 @@
       renderProfileEditorCard();
     }
 
-    // ================= BẢO MẬT PIN =================
+    // ================= BẢO MẬT PIN (hash SHA-256, không lưu plaintext) =================
     const DEFAULT_PIN_HASH_KEY = 'cfg_pin_hash';
-    const LEGACY_PIN_KEY = 'cfg_pin';
+    const LEGACY_PIN_KEY = 'cfg_pin'; // PIN cũ (plaintext) từ phiên bản trước, dùng để tự nâng cấp 1 lần
 
     async function hashPin(pin) {
-      const enc = new TextEncoder().encode('taxiAI_salt_' + pin);
+      const enc = new TextEncoder().encode('taxiAI_salt_' + pin); // thêm salt cố định cho khó đoán hơn
       const buf = await crypto.subtle.digest('SHA-256', enc);
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
@@ -1363,11 +1520,12 @@
       const now = Date.now();
       if (now < pinLockUntil) {
         const secsLeft = Math.ceil((pinLockUntil - now) / 1000);
-        alert(`Bạn nhập sai quá nhiều lần. Vui lòng thử lại sau ${secsLeft} giây.`);
+        await customAlert(`Bạn nhập sai quá nhiều lần. Vui lòng thử lại sau ${secsLeft} giây.`);
         return false;
       }
       let storedHash = localStorage.getItem(DEFAULT_PIN_HASH_KEY);
       if (!storedHash) {
+        // Tự nâng cấp: nếu có PIN cũ dạng plaintext, hoặc chưa từng đặt PIN, mặc định là 1234
         const legacyPin = localStorage.getItem(LEGACY_PIN_KEY) || '1234';
         storedHash = await hashPin(legacyPin);
         localStorage.setItem(DEFAULT_PIN_HASH_KEY, storedHash);
@@ -1380,18 +1538,18 @@
       }
       pinFailCount++;
       if (pinFailCount >= 3) {
-        pinLockUntil = Date.now() + 30000;
+        pinLockUntil = Date.now() + 30000; // khóa 30 giây sau 3 lần sai
         pinFailCount = 0;
-        alert("Sai PIN 3 lần liên tiếp. Tạm khóa 30 giây.");
+        await customAlert("Sai PIN 3 lần liên tiếp. Tạm khóa 30 giây.");
       } else {
-        alert("Sai mã PIN!");
+        await customAlert("Sai mã PIN!");
       }
       return false;
     }
 
     async function promptOpenSettings() {
-      const inputPin = prompt("Nhập mã PIN bảo mật (mặc định: 1234):");
-      if (inputPin === null) return;
+      const inputPin = await customPrompt("Nhập mã PIN bảo mật (mặc định: 1234):");
+      if (inputPin === null) return; // người dùng bấm Hủy
       const ok = await verifyPin(inputPin);
       if (!ok) return;
 
@@ -1404,7 +1562,7 @@
       document.getElementById('bankCode').value = localStorage.getItem('cfg_bank') || '';
       document.getElementById('bankAcc').value = localStorage.getItem('cfg_acc') || '';
       document.getElementById('bankName').value = localStorage.getItem('cfg_name') || '';
-      document.getElementById('appPin').value = '';
+      document.getElementById('appPin').value = ''; // không hiển thị lại PIN cũ, để trống = giữ nguyên
       document.getElementById('settingsModal').classList.remove('hidden');
     }
 
@@ -1413,14 +1571,15 @@
     async function saveSettings() {
       saveCurrentEditingCard();
 
+      // ---- Validate dữ liệu trước khi lưu ----
       for (const p of rateProfiles) {
-        if (p.threshold <= 0 || p.threshold > 999) return alert(`Mốc chuyển km của "${p.name}" phải trong khoảng 1-999 km!`);
-        if (p.tier1 < 0 || p.tier2 < 0 || p.opening < 0) return alert(`Giá cước của "${p.name}" không được là số âm!`);
+        if (p.threshold <= 0 || p.threshold > 999) { await customAlert(`Mốc chuyển km của "${p.name}" phải trong khoảng 1-999 km!`); return; }
+        if (p.tier1 < 0 || p.tier2 < 0 || p.opening < 0) { await customAlert(`Giá cước của "${p.name}" không được là số âm!`); return; }
       }
       const freeWaitMin = parseFloat(document.getElementById('cfgWaitFreeMinutes').value);
-      if (isNaN(freeWaitMin) || freeWaitMin < 0) return alert("Số phút chờ miễn phí phải là số >= 0!");
+      if (isNaN(freeWaitMin) || freeWaitMin < 0) { await customAlert("Số phút chờ miễn phí phải là số >= 0!"); return; }
       const waitRate = parseFormattedNumber(document.getElementById('cfgWaitRatePerMin').value);
-      if (waitRate < 0) return alert("Cước chờ/phút không được âm!");
+      if (waitRate < 0) { await customAlert("Cước chờ/phút không được âm!"); return; }
 
       localStorage.setItem('cfg_rate_profiles_list', JSON.stringify(rateProfiles));
       localStorage.setItem('cfg_active_profile_index', activeProfileIndex);
@@ -1429,7 +1588,7 @@
 
       const pin = document.getElementById('appPin').value.trim();
       if (pin !== '') {
-        if (pin.length !== 4 || isNaN(pin)) return alert("Mã PIN phải gồm đúng 4 chữ số!");
+        if (pin.length !== 4 || isNaN(pin)) { await customAlert("Mã PIN phải gồm đúng 4 chữ số!"); return; }
         localStorage.setItem(DEFAULT_PIN_HASH_KEY, await hashPin(pin));
       }
 
@@ -1439,7 +1598,7 @@
 
       updateHeaderInfo();
       updateTotalFare();
-      alert("Đã lưu cấu hình thành công!");
+      await customAlert("Đã lưu cấu hình thành công!");
       closeSettings();
     }
 
@@ -1490,13 +1649,15 @@
       document.getElementById('statToday').innerText = `${formatNumberWithDots(dayTotal)} đ`;
       document.getElementById('statMonth').innerText = `${formatNumberWithDots(monthTotal)} đ`;
       document.getElementById('statYear').innerText = `${formatNumberWithDots(yearTotal)} đ`;
-      document.getElementById('quickTodayFare').innerText = `${formatNumberWithDots(dayTotal)} đ`;
+      const quickFareEl = document.getElementById('quickTodayFare');
+      quickFareEl.dataset.real = `${formatNumberWithDots(dayTotal)} đ`;
+      quickFareEl.innerText = isRevenueVisible ? quickFareEl.dataset.real : '••••••';
     }
 
-    // ================= SAO LƯU / PHỤC HỒI DỮ LIỆU =================
-    function exportTripData() {
+    // ================= SAO LƯU / PHỤC HỒI DỮ LIỆU (XUẤT-NHẬP FILE JSON) =================
+    async function exportTripData() {
       const trips = JSON.parse(localStorage.getItem('taxi_trips') || '[]');
-      if (trips.length === 0) return alert("Chưa có dữ liệu chuyến đi nào để xuất.");
+      if (trips.length === 0) { await customAlert("Chưa có dữ liệu chuyến đi nào để xuất."); return; }
       const exportObj = {
         exportedAt: new Date().toISOString(),
         appVersion: 'taxi-ai-1.0',
@@ -1517,20 +1678,20 @@
     function importTripData(file) {
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         let parsed;
         try {
           parsed = JSON.parse(e.target.result);
         } catch (err) {
-          alert("File không đúng định dạng JSON hợp lệ!");
+          await customAlert("File không đúng định dạng JSON hợp lệ!");
           return;
         }
         const importedTrips = Array.isArray(parsed) ? parsed : parsed.trips;
         if (!Array.isArray(importedTrips)) {
-          alert("File không chứa dữ liệu chuyến đi hợp lệ!");
+          await customAlert("File không chứa dữ liệu chuyến đi hợp lệ!");
           return;
         }
-        const mode = confirm(
+        const mode = await customConfirm(
           `Tìm thấy ${importedTrips.length} chuyến đi trong file.\n\nBấm OK để GỘP vào lịch sử hiện tại (bỏ trùng theo ID).\nBấm Huỷ để THAY THẾ toàn bộ lịch sử hiện tại.`
         );
         let finalTrips;
@@ -1545,32 +1706,34 @@
         }
         localStorage.setItem('taxi_trips', JSON.stringify(finalTrips));
         loadHistoryAndStats();
-        alert("Đã nhập dữ liệu thành công!");
+        await customAlert("Đã nhập dữ liệu thành công!");
         document.getElementById('importFileInput').value = '';
       };
-      reader.onerror = () => alert("Không thể đọc file. Vui lòng thử lại.");
+      reader.onerror = () => customAlert("Không thể đọc file. Vui lòng thử lại.");
       reader.readAsText(file);
     }
 
     async function clearHistory() {
-      const inputPin = prompt("Nhập mã PIN để xoá lịch sử:");
+      const inputPin = await customPrompt("Nhập mã PIN để xoá lịch sử:");
       if (inputPin === null) return;
       const ok = await verifyPin(inputPin);
       if (!ok) return;
       localStorage.removeItem('taxi_trips');
       loadHistoryAndStats();
-      alert("Đã xoá toàn bộ lịch sử.");
+      await customAlert("Đã xoá toàn bộ lịch sử.");
     }
 
+    // ================= KIỂM TRA HỖ TRỢ TRÌNH DUYỆT (ẨN NÚT NẾU KHÔNG HỖ TRỢ) =================
     function checkBrowserFeatureSupport() {
       const hasSpeechRecognition = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
       if (!hasSpeechRecognition) {
+        // Không hỗ trợ nhận diện giọng nói: ẩn nút trợ lý giọng nói + nút micro trong modal thông dịch
         const voiceBtn = document.getElementById('btnVoiceAssistant');
         if (voiceBtn) {
           voiceBtn.classList.add('opacity-30', 'pointer-events-none');
-          voiceBtn.title = "Trình duyệt này không hỗ trợ nhận diện giọng nói";
+          voiceBtn.title = "Trình duyệt này không hỗ trợ nhận diện giọng nói (khuyên dùng Chrome trên Android)";
         }
-        ['btnDriverSpeak', 'btnGuestSpeak', 'btnAutoConversation'].forEach(id => {
+        ['btnDriverSpeak', 'btnGuestSpeak'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
             el.disabled = true;
@@ -1580,11 +1743,13 @@
         });
       }
 
+      // Cảnh báo nếu Wake Lock (giữ màn hình sáng) không thể hoạt động do môi trường không đủ điều kiện:
+      // API này CHỈ chạy trên HTTPS hoặc localhost, KHÔNG chạy khi mở file trực tiếp (file://) hoặc HTTP thường.
       if (!('wakeLock' in navigator)) {
-        console.warn('Wake Lock API không khả dụng.');
+        console.warn('Wake Lock API không khả dụng: cần mở trang qua HTTPS (hoặc localhost), không hỗ trợ khi mở trực tiếp file HTML hoặc HTTP thường.');
         const badge = document.getElementById('wakeLockBadge');
         if (badge) {
-          badge.title = "Thiết bị/trình duyệt này không hỗ trợ giữ màn hình sáng";
+          badge.title = "Thiết bị/trình duyệt này không hỗ trợ giữ màn hình sáng, hoặc trang chưa được mở qua HTTPS";
         }
       }
     }
@@ -1594,12 +1759,13 @@
       updateHeaderInfo();
       loadHistoryAndStats();
       checkBrowserFeatureSupport();
-      preloadVoices();
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = preloadVoices;
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
       }
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+        navigator.serviceWorker.register('sw.js').catch(() => {
+          // Nếu chưa host sw.js/manifest.json cùng thư mục, app vẫn chạy bình thường (chỉ mất tính năng offline/cài đặt)
+        });
       }
     };
   </script>
