@@ -71,6 +71,10 @@
           <i class="fa-solid fa-microphone text-sm"></i>
           <span id="voicePulse" class="hidden absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full animate-ping"></span>
         </button>
+        <button onclick="openAppointmentModal()" title="Lịch hẹn" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full text-fuchsia-400 border border-slate-700 shadow transition active:scale-95 relative">
+          <i class="fa-solid fa-calendar-days text-sm"></i>
+          <span id="apptBadge" class="hidden absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">0</span>
+        </button>
         <button onclick="openHistoryModal()" title="Lịch sử" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full text-blue-400 border border-slate-700 shadow transition active:scale-95">
           <i class="fa-solid fa-clock-rotate-left text-sm"></i>
         </button>
@@ -95,6 +99,15 @@
             <button onclick="setGuestLanguage('zh')" id="langBtn_zh" class="px-2 py-1 rounded-xl text-[10px] font-bold text-slate-500 hover:bg-white transition">🇨🇳 Trung</button>
             <button onclick="setGuestLanguage('ko')" id="langBtn_ko" class="px-2 py-1 rounded-xl text-[10px] font-bold text-slate-500 hover:bg-white transition">🇰🇷 Hàn</button>
           </div>
+        </div>
+
+        <!-- Banner nhắc lịch hẹn sắp tới (chỉ hiện khi có lịch hẹn gần tới giờ) -->
+        <div id="apptReminderBanner" class="hidden bg-fuchsia-600 text-white rounded-2xl p-2.5 mb-2.5 flex items-center justify-between text-xs shadow animate-pulse cursor-pointer" onclick="openAppointmentModal()">
+          <span class="flex items-center gap-1.5 min-w-0">
+            <i class="fa-solid fa-bell shrink-0"></i>
+            <span id="apptReminderText" class="truncate font-semibold"></span>
+          </span>
+          <i class="fa-solid fa-chevron-right text-[10px] shrink-0 ml-1"></i>
         </div>
 
         <!-- Chọn chế độ tính tiền -->
@@ -267,6 +280,66 @@
         <div class="flex gap-2 justify-end">
           <button id="customDialogCancelBtn" onclick="_resolveDialog(false)" class="hidden px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-100 transition">Huỷ</button>
           <button id="customDialogOkBtn" onclick="_resolveDialog(true)" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MODAL LỊCH HẸN ĐÓN KHÁCH ================= -->
+    <div id="appointmentModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-end sm:items-center justify-center p-3 hidden">
+      <div class="bg-white rounded-3xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3 max-h-[90vh]">
+        <div class="flex justify-between items-center border-b pb-2 shrink-0">
+          <div class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-days text-fuchsia-600 text-base"></i> LỊCH HẸN ĐÓN KHÁCH
+          </div>
+          <button onclick="closeAppointmentModal()" class="text-gray-400 hover:text-gray-600 text-lg">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Danh sách lịch hẹn -->
+        <div id="appointmentList" class="space-y-2 overflow-y-auto flex-1 min-h-[100px]">
+          <!-- render bằng JS -->
+        </div>
+
+        <!-- Nút mở form thêm mới -->
+        <button id="btnToggleApptForm" onclick="toggleApptForm()" class="shrink-0 w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
+        </button>
+
+        <!-- Form thêm lịch hẹn (ẩn mặc định) -->
+        <div id="apptForm" class="hidden shrink-0 space-y-2 border-t pt-2.5">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[10px] font-bold text-slate-500">Ngày hẹn *</label>
+              <input id="apptDateInput" type="date" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500">Giờ hẹn *</label>
+              <input id="apptTimeInput" type="time" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+            </div>
+          </div>
+          <div class="relative">
+            <label class="text-[10px] font-bold text-slate-500">Địa điểm đón *</label>
+            <input id="apptLocationInput" type="text" placeholder="Nhập địa chỉ đón khách..." autocomplete="off" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" oninput="handleAddressInput('appt')">
+            <div id="apptSuggestBox" class="autocomplete-items hidden"></div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[10px] font-bold text-slate-500">Tên khách (không bắt buộc)</label>
+              <input id="apptNameInput" type="text" placeholder="Anh Ba..." class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500">SĐT (không bắt buộc)</label>
+              <input id="apptPhoneInput" type="tel" placeholder="09xx xxx xxx" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+            </div>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-slate-500">Ghi chú (không bắt buộc)</label>
+            <input id="apptNoteInput" type="text" placeholder="VD: đón tại cổng B, mang theo hành lý lớn..." class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+          </div>
+          <button onclick="saveNewAppointment()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition active:scale-95">
+            <i class="fa-solid fa-check"></i> Lưu lịch hẹn
+          </button>
         </div>
       </div>
     </div>
@@ -1016,14 +1089,14 @@
 
     function handleAddressInput(type) {
       clearTimeout(debounceTimer);
-      const inputEl = type === 'start' ? document.getElementById('inputStart') : document.getElementById('inputEnd');
+      const inputEl = type === 'start' ? document.getElementById('inputStart') : type === 'end' ? document.getElementById('inputEnd') : document.getElementById('apptLocationInput');
       const query = inputEl.value.trim();
       if (query.length < 2) { closeAllSuggestBoxes(); return; }
       debounceTimer = setTimeout(() => searchLocations(query, type), 350);
     }
 
     async function searchLocations(query, type) {
-      const suggestBox = type === 'start' ? document.getElementById('startSuggestBox') : document.getElementById('endSuggestBox');
+      const suggestBox = type === 'start' ? document.getElementById('startSuggestBox') : type === 'end' ? document.getElementById('endSuggestBox') : document.getElementById('apptSuggestBox');
       suggestBox.innerHTML = '<div class="p-2 text-center text-gray-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tìm địa chỉ...</div>';
       suggestBox.classList.remove('hidden');
       let results = [];
@@ -1052,6 +1125,8 @@
       renderSuggestions(results, type, suggestBox);
     }
 
+    let apptSelectedCoords = null; // toạ độ địa điểm đón được chọn khi tạo lịch hẹn (nếu có)
+
     function renderSuggestions(results, type, suggestBox) {
       suggestBox.innerHTML = '';
       if (!results || results.length === 0) {
@@ -1072,14 +1147,19 @@
           if (type === 'start') {
             document.getElementById('inputStart').value = item.name;
             currentStartCoords = item.coords;
-          } else {
+          } else if (type === 'end') {
             document.getElementById('inputEnd').value = item.name;
             currentEndCoords = item.coords;
+          } else {
+            document.getElementById('apptLocationInput').value = item.name;
+            apptSelectedCoords = item.coords;
           }
           closeAllSuggestBoxes();
-          const s = document.getElementById('inputStart').value;
-          const e = document.getElementById('inputEnd').value;
-          if (s && e) document.getElementById('tripNote').value = `${s} -> ${e}`;
+          if (type === 'start' || type === 'end') {
+            const s = document.getElementById('inputStart').value;
+            const e = document.getElementById('inputEnd').value;
+            if (s && e) document.getElementById('tripNote').value = `${s} -> ${e}`;
+          }
         };
         suggestBox.appendChild(div);
       });
@@ -1088,6 +1168,233 @@
     function closeAllSuggestBoxes() {
       document.getElementById('startSuggestBox').classList.add('hidden');
       document.getElementById('endSuggestBox').classList.add('hidden');
+      const apptBox = document.getElementById('apptSuggestBox');
+      if (apptBox) apptBox.classList.add('hidden');
+    }
+
+    // ================= LỊCH HẸN ĐÓN KHÁCH =================
+    const APPT_STORAGE_KEY = 'taxi_appointments';
+    const APPT_REMIND_BEFORE_MIN = 20; // nhắc trước giờ hẹn bao nhiêu phút
+    let apptNotificationAsked = false;
+
+    function loadAppointments() {
+      try {
+        return JSON.parse(localStorage.getItem(APPT_STORAGE_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveAppointments(list) {
+      localStorage.setItem(APPT_STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function openAppointmentModal() {
+      document.getElementById('appointmentModal').classList.remove('hidden');
+      document.getElementById('apptForm').classList.add('hidden');
+      renderAppointmentList();
+      // Xin quyền thông báo lần đầu người dùng mở tính năng này (không hỏi ngay từ lúc mở app để tránh làm phiền)
+      if (!apptNotificationAsked && 'Notification' in window && Notification.permission === 'default') {
+        apptNotificationAsked = true;
+        Notification.requestPermission();
+      }
+    }
+
+    function closeAppointmentModal() {
+      document.getElementById('appointmentModal').classList.add('hidden');
+    }
+
+    function toggleApptForm() {
+      const form = document.getElementById('apptForm');
+      const isHidden = form.classList.contains('hidden');
+      form.classList.toggle('hidden');
+      if (isHidden) {
+        // Mặc định điền sẵn ngày hôm nay để đỡ phải bấm chọn lại
+        const today = new Date();
+        document.getElementById('apptDateInput').value = today.toISOString().slice(0, 10);
+        document.getElementById('apptTimeInput').value = '';
+        document.getElementById('apptLocationInput').value = '';
+        document.getElementById('apptNameInput').value = '';
+        document.getElementById('apptPhoneInput').value = '';
+        document.getElementById('apptNoteInput').value = '';
+        apptSelectedCoords = null;
+      }
+    }
+
+    async function saveNewAppointment() {
+      const date = document.getElementById('apptDateInput').value;
+      const time = document.getElementById('apptTimeInput').value;
+      const location = document.getElementById('apptLocationInput').value.trim();
+      const name = document.getElementById('apptNameInput').value.trim();
+      const phone = document.getElementById('apptPhoneInput').value.trim();
+      const note = document.getElementById('apptNoteInput').value.trim();
+
+      if (!date || !time) { await customAlert("Vui lòng chọn đầy đủ ngày và giờ hẹn!"); return; }
+      if (!location) { await customAlert("Vui lòng nhập địa điểm đón khách!"); return; }
+
+      const dateTime = new Date(`${date}T${time}:00`);
+      if (isNaN(dateTime.getTime())) { await customAlert("Ngày/giờ không hợp lệ!"); return; }
+
+      const list = loadAppointments();
+      list.push({
+        id: 'appt_' + Date.now(),
+        dateTime: dateTime.toISOString(),
+        location,
+        coords: apptSelectedCoords,
+        customerName: name,
+        phone,
+        note,
+        status: 'pending',
+        reminded: false
+      });
+      saveAppointments(list);
+      toggleApptForm(); // đóng form lại
+      renderAppointmentList();
+      updateApptBadge();
+      await customAlert("Đã lưu lịch hẹn!");
+    }
+
+    async function markAppointmentDone(id) {
+      const list = loadAppointments();
+      const item = list.find(a => a.id === id);
+      if (!item) return;
+      item.status = 'done';
+      saveAppointments(list);
+      renderAppointmentList();
+      updateApptBadge();
+    }
+
+    async function deleteAppointment(id) {
+      if (!(await customConfirm("Xoá lịch hẹn này?"))) return;
+      let list = loadAppointments();
+      list = list.filter(a => a.id !== id);
+      saveAppointments(list);
+      renderAppointmentList();
+      updateApptBadge();
+    }
+
+    function formatApptDateTime(iso) {
+      const d = new Date(iso);
+      const now = new Date();
+      const isToday = d.toDateString() === now.toDateString();
+      const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+      const isTomorrow = d.toDateString() === tomorrow.toDateString();
+      const timeStr = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      if (isToday) return `Hôm nay, ${timeStr}`;
+      if (isTomorrow) return `Ngày mai, ${timeStr}`;
+      return `${dateStr}, ${timeStr}`;
+    }
+
+    function renderAppointmentList() {
+      const container = document.getElementById('appointmentList');
+      let list = loadAppointments();
+      // Sắp xếp: lịch chưa hoàn thành lên trước theo thời gian gần nhất, lịch đã xong xuống cuối
+      list.sort((a, b) => {
+        if (a.status !== b.status) return a.status === 'done' ? 1 : -1;
+        return new Date(a.dateTime) - new Date(b.dateTime);
+      });
+
+      if (list.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-400 text-xs py-6"><i class="fa-solid fa-calendar-xmark text-2xl block mb-2"></i>Chưa có lịch hẹn nào</div>';
+        return;
+      }
+
+      const now = new Date();
+      container.innerHTML = list.map(item => {
+        const dt = new Date(item.dateTime);
+        const isPast = dt < now && item.status === 'pending';
+        const isDone = item.status === 'done';
+        const badgeColor = isDone ? 'bg-gray-100 text-gray-500' : isPast ? 'bg-rose-100 text-rose-600' : 'bg-fuchsia-100 text-fuchsia-700';
+        const badgeText = isDone ? 'Đã đón' : isPast ? 'Quá giờ hẹn' : formatApptDateTime(item.dateTime);
+        return `
+          <div class="border rounded-2xl p-2.5 ${isDone ? 'opacity-50' : ''} ${isPast ? 'border-rose-200 bg-rose-50/40' : 'border-gray-200'}">
+            <div class="flex justify-between items-start gap-2 mb-1">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeColor}">${badgeText}</span>
+              <div class="flex gap-1 shrink-0">
+                ${!isDone ? `<button onclick="markAppointmentDone('${item.id}')" title="Đánh dấu đã đón khách" class="text-emerald-600 hover:bg-emerald-50 w-6 h-6 rounded-lg flex items-center justify-center"><i class="fa-solid fa-check text-xs"></i></button>` : ''}
+                <button onclick="deleteAppointment('${item.id}')" title="Xoá" class="text-rose-500 hover:bg-rose-50 w-6 h-6 rounded-lg flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
+              </div>
+            </div>
+            <div class="text-xs font-bold text-slate-800 flex items-center gap-1"><i class="fa-solid fa-location-dot text-fuchsia-500"></i> ${item.location}</div>
+            ${item.customerName || item.phone ? `<div class="text-[11px] text-slate-600 mt-0.5">${item.customerName || ''}${item.customerName && item.phone ? ' - ' : ''}${item.phone || ''}</div>` : ''}
+            ${item.note ? `<div class="text-[11px] text-slate-500 italic mt-0.5">${item.note}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateApptBadge() {
+      const list = loadAppointments();
+      const today = new Date().toDateString();
+      const count = list.filter(a => a.status === 'pending' && new Date(a.dateTime).toDateString() === today).length;
+      const badge = document.getElementById('apptBadge');
+      if (count > 0) {
+        badge.innerText = count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // Kiểm tra định kỳ xem có lịch hẹn nào sắp tới giờ để nhắc tài xế (chạy khi app đang mở)
+    function checkAppointmentReminders() {
+      const list = loadAppointments();
+      const now = new Date();
+      let changed = false;
+      let nearest = null;
+
+      list.forEach(item => {
+        if (item.status !== 'pending') return;
+        const dt = new Date(item.dateTime);
+        const diffMin = (dt - now) / 60000;
+
+        if (diffMin <= APPT_REMIND_BEFORE_MIN && diffMin > -60 && !item.reminded) {
+          item.reminded = true;
+          changed = true;
+          fireAppointmentReminder(item);
+        }
+        if (diffMin > -60 && (!nearest || dt < new Date(nearest.dateTime))) {
+          nearest = item;
+        }
+      });
+
+      if (changed) saveAppointments(list);
+
+      // Cập nhật banner nhắc nhở trên màn hình chính cho lịch hẹn gần nhất (trong vòng nhắc trước hoặc đã quá giờ dưới 1 tiếng)
+      const banner = document.getElementById('apptReminderBanner');
+      if (nearest) {
+        const dt = new Date(nearest.dateTime);
+        const diffMin = (dt - now) / 60000;
+        if (diffMin <= APPT_REMIND_BEFORE_MIN) {
+          const label = diffMin < 0 ? `Đã quá giờ hẹn ${formatApptDateTime(nearest.dateTime)}` : `Còn ${Math.ceil(diffMin)} phút: đón khách lúc ${formatApptDateTime(nearest.dateTime)}`;
+          document.getElementById('apptReminderText').innerText = `${label} - ${nearest.location}`;
+          banner.classList.remove('hidden');
+        } else {
+          banner.classList.add('hidden');
+        }
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      updateApptBadge();
+    }
+
+    function fireAppointmentReminder(item) {
+      const msg = `Sắp đến giờ đón khách lúc ${formatApptDateTime(item.dateTime)} tại ${item.location}${item.customerName ? ' (' + item.customerName + ')' : ''}`;
+      // Thông báo hệ thống (nếu được cấp quyền) - vẫn hiện được kể cả khi app đang chạy nền
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification('🔔 Lịch hẹn đón khách', { body: msg, tag: item.id });
+        } catch (e) {}
+      }
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      // Đọc to nhắc nhở bằng giọng nói tiếng Việt, hữu ích khi tài xế đang lái xe không tiện nhìn màn hình
+      try {
+        const utter = new SpeechSynthesisUtterance(msg);
+        utter.lang = 'vi-VN';
+        window.speechSynthesis.speak(utter);
+      } catch (e) {}
     }
 
     document.addEventListener('click', function(e) {
@@ -1754,6 +2061,9 @@
       updateHeaderInfo();
       loadHistoryAndStats();
       checkBrowserFeatureSupport();
+      updateApptBadge();
+      checkAppointmentReminders();
+      setInterval(checkAppointmentReminders, 30000); // kiểm tra lịch hẹn mỗi 30 giây trong lúc app đang mở
       if ('speechSynthesis' in window) {
         window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
       }
