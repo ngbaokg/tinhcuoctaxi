@@ -58,27 +58,27 @@
     <header class="bg-slate-900 text-white p-3.5 flex justify-between items-center shrink-0 z-30 shadow-md">
       <div>
         <div class="flex items-center gap-2">
-          <h1 class="text-base font-bold tracking-wide">ĐỒNG HỒ TAXI AI</h1>
+          <h1 class="text-base font-bold tracking-wide">ĐỒNG HỒ TAXI</h1>
           <button onclick="toggleActiveRateProfile()" id="quickRateSwitchBtn" class="bg-amber-500 hover:bg-amber-600 text-slate-900 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow transition active:scale-95 text-white">
             BẢNG 1
           </button>
         </div>
         <p id="headerRateInfo" class="text-[11px] text-gray-400">0-20km: 10.000đ | >20km: 8.000đ</p>
       </div>
-      <div class="flex gap-1.5 items-center">
+      <div class="flex gap-1.5 items-center shrink-0">
         <!-- Nút Trợ lý Giọng nói AI điều khiển xe -->
-        <button id="btnVoiceAssistant" onclick="toggleVoiceAI()" title="Trợ lý giọng nói" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full text-emerald-400 border border-slate-700 shadow transition active:scale-95 relative">
+        <button id="btnVoiceAssistant" onclick="toggleVoiceAI()" title="Trợ lý giọng nói" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 rounded-full text-emerald-400 border border-slate-700 shadow transition active:scale-95 relative flex items-center justify-center">
           <i class="fa-solid fa-microphone text-sm"></i>
           <span id="voicePulse" class="hidden absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full animate-ping"></span>
         </button>
-        <button onclick="openAppointmentModal()" title="Lịch hẹn" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full text-fuchsia-400 border border-slate-700 shadow transition active:scale-95 relative">
+        <button onclick="openAppointmentModal()" title="Lịch hẹn" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 rounded-full text-fuchsia-400 border border-slate-700 shadow transition active:scale-95 relative flex items-center justify-center">
           <i class="fa-solid fa-calendar-days text-sm"></i>
           <span id="apptBadge" class="hidden absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">0</span>
         </button>
-        <button onclick="openHistoryModal()" title="Lịch sử" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full text-blue-400 border border-slate-700 shadow transition active:scale-95">
+        <button onclick="openHistoryModal()" title="Lịch sử" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 rounded-full text-blue-400 border border-slate-700 shadow transition active:scale-95 flex items-center justify-center">
           <i class="fa-solid fa-clock-rotate-left text-sm"></i>
         </button>
-        <button onclick="promptOpenSettings()" title="Cài đặt" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full text-yellow-400 border border-slate-700 shadow transition active:scale-95">
+        <button onclick="promptOpenSettings()" title="Cài đặt" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 rounded-full text-yellow-400 border border-slate-700 shadow transition active:scale-95 flex items-center justify-center">
           <i class="fa-solid fa-gear text-sm"></i>
         </button>
       </div>
@@ -233,7 +233,7 @@
 
         <!-- Nút Thông dịch viên AI 2 chiều (dùng trong lúc chở khách, đặt gần Bắt đầu/Kết thúc cho tiện thao tác) -->
         <button onclick="openTranslateModal()" class="w-full bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm mb-2 border border-indigo-500">
-          <i class="fa-solid fa-language"></i> <span id="translateBtnLabel">Thông dịch viên AI 2 chiều</span>
+          <i class="fa-solid fa-language"></i> <span id="translateBtnLabel">Thông dịch 2 chiều</span>
         </button>
 
         <!-- Nút thanh toán -->
@@ -998,7 +998,7 @@
 
     // ================= DỊCH GIAO DIỆN CÁC NÚT CHÍNH THEO NGÔN NGỮ KHÁCH ĐANG CHỌN =================
     const uiTranslations = {
-      vi: { start: 'Bắt đầu', running: 'Đang chạy...', end: 'Kết thúc', translate: 'Thông dịch viên AI 2 chiều', cashPay: 'Trả tiền mặt', qrPay: 'Chuyển khoản QR', fareLabel: 'Tổng cước', timeLabel: 'Thời gian', distanceLabel: 'Quãng đường', waitLabel: 'Cước chờ', meterTitle: 'Đồng hồ chuyến đi', agreedTitle: 'Cước thỏa thuận trọn gói' },
+      vi: { start: 'Bắt đầu', running: 'Đang chạy...', end: 'Kết thúc', translate: 'Thông dịch 2 chiều', cashPay: 'Trả tiền mặt', qrPay: 'Chuyển khoản QR', fareLabel: 'Tổng cước', timeLabel: 'Thời gian', distanceLabel: 'Quãng đường', waitLabel: 'Cước chờ', meterTitle: 'Đồng hồ chuyến đi', agreedTitle: 'Cước thỏa thuận trọn gói' },
       en: { start: 'Start', running: 'Running...', end: 'End', translate: 'Two-way AI Interpreter', cashPay: 'Pay Cash', qrPay: 'Pay by QR', fareLabel: 'Total Fare', timeLabel: 'Time', distanceLabel: 'Distance', waitLabel: 'Wait Fee', meterTitle: 'Trip Meter', agreedTitle: 'Agreed Fixed Fare' },
       fr: { start: 'Démarrer', running: 'En cours...', end: 'Terminer', translate: 'Interprète IA bidirectionnel', cashPay: 'Payer en espèces', qrPay: 'Payer par QR', fareLabel: 'Tarif total', timeLabel: 'Durée', distanceLabel: 'Distance', waitLabel: "Frais d'attente", meterTitle: 'Compteur de trajet', agreedTitle: 'Tarif forfaitaire convenu' },
       zh: { start: '开始', running: '行驶中...', end: '结束', translate: '双向AI翻译', cashPay: '现金支付', qrPay: '扫码支付', fareLabel: '总车费', timeLabel: '时间', distanceLabel: '里程', waitLabel: '等待费', meterTitle: '行程计价器', agreedTitle: '协议一口价' },
