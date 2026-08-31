@@ -295,8 +295,8 @@
 
     <!-- ================= MODAL LỊCH HẸN ĐÓN KHÁCH ================= -->
     <div id="appointmentModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-end sm:items-center justify-center p-3 hidden">
-      <div class="bg-white rounded-3xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3 max-h-[90vh]">
-        <div class="flex justify-between items-center border-b pb-2 shrink-0">
+      <div class="bg-white rounded-3xl w-full max-w-sm p-4 shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="flex justify-between items-center border-b pb-2 shrink-0 mb-3">
           <div class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
             <i class="fa-solid fa-calendar-days text-fuchsia-600 text-base"></i> LỊCH HẸN ĐÓN KHÁCH
           </div>
@@ -305,76 +305,82 @@
           </button>
         </div>
 
-        <!-- Danh sách lịch hẹn -->
-        <div id="appointmentList" class="space-y-2 overflow-y-auto flex-1 min-h-[100px]">
-          <!-- render bằng JS -->
-        </div>
+        <!-- QUAN TRỌNG: gộp chung danh sách + nút + form vào 1 vùng cuộn duy nhất,
+             để khi form dài (nhiều trường), luôn kéo xuống được tới nút "Lưu lịch hẹn" ở cuối,
+             thay vì để nút Lưu bị cắt ngoài vùng nhìn thấy như trước đây. -->
+        <div class="overflow-y-auto flex-1 space-y-3 min-h-0">
 
-        <!-- Nút mở form thêm mới -->
-        <button id="btnToggleApptForm" onclick="toggleApptForm()" class="shrink-0 w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
-        </button>
+          <!-- Danh sách lịch hẹn -->
+          <div id="appointmentList" class="space-y-2">
+            <!-- render bằng JS -->
+          </div>
 
-        <!-- Form thêm/sửa lịch hẹn (ẩn mặc định) -->
-        <div id="apptForm" class="hidden shrink-0 space-y-2 border-t pt-2.5">
-          <div class="text-xs font-bold text-fuchsia-700 flex items-center gap-1.5" id="apptFormTitle">
+          <!-- Nút mở form thêm mới -->
+          <button id="btnToggleApptForm" onclick="toggleApptForm()" class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex items-center justify-center gap-1.5">
             <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-[10px] font-bold text-slate-500">Ngày hẹn *</label>
-              <input id="apptDateInput" type="date" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
-            </div>
-            <div>
-              <label class="text-[10px] font-bold text-slate-500">Giờ hẹn *</label>
-              <input id="apptTimeInput" type="time" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
-            </div>
-          </div>
-          <div class="relative">
-            <label class="text-[10px] font-bold text-slate-500">Địa điểm đón *</label>
-            <div class="flex gap-1.5 mt-0.5">
-              <input id="apptLocationInput" type="text" placeholder="Nhập địa chỉ đón..." autocomplete="off" class="flex-1 border rounded-lg p-2 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" oninput="handleAddressInput('appt')" onkeydown="if(event.key==='Enter') triggerAddressSearch('appt')">
-              <button onclick="triggerAddressSearch('appt')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
-                <i class="fa-solid fa-magnifying-glass"></i>
-              </button>
-              <button onclick="openMapsForAppointmentInput()" title="Mở Google Maps dẫn đường tới đây" class="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
-                <i class="fa-solid fa-diamond-turn-right"></i>
-              </button>
-            </div>
-            <div id="apptSuggestBox" class="autocomplete-items hidden"></div>
-          </div>
-          <div class="relative">
-            <label class="text-[10px] font-bold text-slate-500">Điểm đến (không bắt buộc)</label>
-            <div class="flex gap-1.5 mt-0.5">
-              <input id="apptDestInput" type="text" placeholder="Nhập địa chỉ điểm đến..." autocomplete="off" class="flex-1 border rounded-lg p-2 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" oninput="handleAddressInput('apptDest')" onkeydown="if(event.key==='Enter') triggerAddressSearch('apptDest')">
-              <button onclick="triggerAddressSearch('apptDest')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
-                <i class="fa-solid fa-magnifying-glass"></i>
-              </button>
-            </div>
-            <div id="apptDestSuggestBox" class="autocomplete-items hidden"></div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-[10px] font-bold text-slate-500">Tên khách (không bắt buộc)</label>
-              <input id="apptNameInput" type="text" placeholder="Anh Ba..." class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
-            </div>
-            <div>
-              <label class="text-[10px] font-bold text-slate-500">SĐT (không bắt buộc)</label>
-              <input id="apptPhoneInput" type="tel" placeholder="09xx xxx xxx" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
-            </div>
-          </div>
-          <div>
-            <label class="text-[10px] font-bold text-slate-500">Giá tiền dự kiến (không bắt buộc)</label>
-            <input id="apptPriceInput" type="text" inputmode="numeric" placeholder="VD: 200.000" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500 font-semibold" oninput="handleCurrencyInput(this)">
-            <p class="text-[9px] text-gray-400 mt-0.5">Khi bấm "Đã đón khách", số tiền này sẽ tự cộng vào doanh thu.</p>
-          </div>
-          <div>
-            <label class="text-[10px] font-bold text-slate-500">Ghi chú (không bắt buộc)</label>
-            <input id="apptNoteInput" type="text" placeholder="VD: đón tại cổng B, mang theo hành lý lớn..." class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
-          </div>
-          <button onclick="saveAppointmentForm()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition active:scale-95">
-            <i class="fa-solid fa-check"></i> Lưu lịch hẹn
           </button>
+
+          <!-- Form thêm/sửa lịch hẹn (ẩn mặc định) -->
+          <div id="apptForm" class="hidden space-y-2 border-t pt-2.5">
+            <div class="text-xs font-bold text-fuchsia-700 flex items-center gap-1.5" id="apptFormTitle">
+              <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-[10px] font-bold text-slate-500">Ngày hẹn *</label>
+                <input id="apptDateInput" type="date" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+              </div>
+              <div>
+                <label class="text-[10px] font-bold text-slate-500">Giờ hẹn *</label>
+                <input id="apptTimeInput" type="time" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+              </div>
+            </div>
+            <div class="relative">
+              <label class="text-[10px] font-bold text-slate-500">Địa điểm đón *</label>
+              <div class="flex gap-1.5 mt-0.5">
+                <input id="apptLocationInput" type="text" placeholder="Nhập địa chỉ đón..." autocomplete="off" class="flex-1 border rounded-lg p-2 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" oninput="handleAddressInput('appt')" onkeydown="if(event.key==='Enter') triggerAddressSearch('appt')">
+                <button onclick="triggerAddressSearch('appt')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button onclick="openMapsForAppointmentInput()" title="Mở Google Maps dẫn đường tới đây" class="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
+                  <i class="fa-solid fa-diamond-turn-right"></i>
+                </button>
+              </div>
+              <div id="apptSuggestBox" class="autocomplete-items hidden"></div>
+            </div>
+            <div class="relative">
+              <label class="text-[10px] font-bold text-slate-500">Điểm đến (không bắt buộc)</label>
+              <div class="flex gap-1.5 mt-0.5">
+                <input id="apptDestInput" type="text" placeholder="Nhập địa chỉ điểm đến..." autocomplete="off" class="flex-1 border rounded-lg p-2 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" oninput="handleAddressInput('apptDest')" onkeydown="if(event.key==='Enter') triggerAddressSearch('apptDest')">
+                <button onclick="triggerAddressSearch('apptDest')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+              </div>
+              <div id="apptDestSuggestBox" class="autocomplete-items hidden"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-[10px] font-bold text-slate-500">Tên khách (không bắt buộc)</label>
+                <input id="apptNameInput" type="text" placeholder="Anh Ba..." class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+              </div>
+              <div>
+                <label class="text-[10px] font-bold text-slate-500">SĐT (không bắt buộc)</label>
+                <input id="apptPhoneInput" type="tel" placeholder="09xx xxx xxx" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+              </div>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500">Giá tiền dự kiến (không bắt buộc)</label>
+              <input id="apptPriceInput" type="text" inputmode="numeric" placeholder="VD: 200.000" class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500 font-semibold" oninput="handleCurrencyInput(this)">
+              <p class="text-[9px] text-gray-400 mt-0.5">Khi bấm "Đã đón khách", số tiền này sẽ tự cộng vào doanh thu.</p>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500">Ghi chú (không bắt buộc)</label>
+              <input id="apptNoteInput" type="text" placeholder="VD: đón tại cổng B, mang theo hành lý lớn..." class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
+            </div>
+            <button onclick="saveAppointmentForm()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition active:scale-95 mb-1">
+              <i class="fa-solid fa-check"></i> Lưu lịch hẹn
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1276,7 +1282,9 @@
     function openAppointmentModal() {
       document.getElementById('appointmentModal').classList.remove('hidden');
       document.getElementById('apptForm').classList.add('hidden');
+      document.getElementById('btnToggleApptForm').innerHTML = '<i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới';
       editingApptId = null;
+      closeAllSuggestBoxes(); // tránh ô gợi ý/lỗi tìm địa chỉ còn sót lại từ lần mở trước
       renderAppointmentList();
       // Xin quyền thông báo lần đầu người dùng mở tính năng này (không hỏi ngay từ lúc mở app để tránh làm phiền)
       if (!apptNotificationAsked && 'Notification' in window && Notification.permission === 'default') {
@@ -1303,18 +1311,23 @@
       document.getElementById('apptNoteInput').value = '';
       apptSelectedCoords = null;
       apptDestCoords = null;
+      closeAllSuggestBoxes(); // xoá ô gợi ý/lỗi cũ (nếu có) khi mở form thêm mới
     }
 
     function toggleApptForm() {
       const form = document.getElementById('apptForm');
       const isHidden = form.classList.contains('hidden');
+      const toggleBtn = document.getElementById('btnToggleApptForm');
       if (isHidden) {
         editingApptId = null;
         document.getElementById('apptFormTitle').innerHTML = '<i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới';
         resetApptFormFields();
         form.classList.remove('hidden');
+        toggleBtn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> Thu gọn';
       } else {
         form.classList.add('hidden');
+        closeAllSuggestBoxes();
+        toggleBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới';
       }
     }
 
@@ -1323,6 +1336,7 @@
       const item = list.find(a => a.id === id);
       if (!item) return;
       editingApptId = id;
+      closeAllSuggestBoxes(); // xoá ô gợi ý/lỗi cũ (nếu có) trước khi điền dữ liệu để sửa
 
       const dt = new Date(item.dateTime);
       const pad = n => String(n).padStart(2, '0');
@@ -1339,6 +1353,7 @@
 
       document.getElementById('apptFormTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Sửa lịch hẹn';
       document.getElementById('apptForm').classList.remove('hidden');
+      document.getElementById('btnToggleApptForm').innerHTML = '<i class="fa-solid fa-chevron-up"></i> Thu gọn';
       document.getElementById('apptForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
