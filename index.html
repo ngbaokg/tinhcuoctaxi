@@ -166,7 +166,7 @@
           <div class="space-y-2 mb-2">
             <div class="relative">
               <div class="flex gap-1.5">
-                <input id="inputStart" type="text" placeholder="Nhập điểm đón, bấm Enter hoặc nút tìm..." autocomplete="off" class="flex-1 border border-gray-300 rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white" onkeydown="if(event.key==='Enter') triggerAddressSearch('start')">
+                <input id="inputStart" type="text" placeholder="Nhập điểm đón..." autocomplete="off" class="flex-1 border border-gray-300 rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white" oninput="handleAddressInput('start')" onkeydown="if(event.key==='Enter') triggerAddressSearch('start')">
                 <button onclick="triggerAddressSearch('start')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-xl text-xs flex items-center justify-center active:scale-95 transition">
                   <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
@@ -179,7 +179,7 @@
 
             <div class="relative">
               <div class="flex gap-1.5">
-                <input id="inputEnd" type="text" placeholder="Nhập điểm đến, bấm Enter hoặc nút tìm..." autocomplete="off" class="flex-1 border border-gray-300 rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white" onkeydown="if(event.key==='Enter') triggerAddressSearch('end')">
+                <input id="inputEnd" type="text" placeholder="Nhập điểm đến..." autocomplete="off" class="flex-1 border border-gray-300 rounded-xl p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white" oninput="handleAddressInput('end')" onkeydown="if(event.key==='Enter') triggerAddressSearch('end')">
                 <button onclick="triggerAddressSearch('end')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-xl text-xs flex items-center justify-center active:scale-95 transition">
                   <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
@@ -187,7 +187,7 @@
               <div id="endSuggestBox" class="autocomplete-items hidden"></div>
             </div>
           </div>
-          <p class="text-[9px] text-gray-400 text-right -mt-1.5 mb-2">Dữ liệu địa chỉ © <a href="https://www.openstreetmap.org/copyright" target="_blank" class="underline">OpenStreetMap</a></p>
+          <p class="text-[9px] text-gray-400 text-right -mt-1.5 mb-2">Tìm địa chỉ bởi <a href="https://photon.komoot.io/" target="_blank" class="underline">Photon/Komoot</a> · Dữ liệu © <a href="https://www.openstreetmap.org/copyright" target="_blank" class="underline">OpenStreetMap</a></p>
 
           <div class="grid grid-cols-3 gap-2">
             <button onclick="openGoogleMapsDirect()" class="col-span-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs shadow transition active:scale-95 flex items-center justify-center gap-1">
@@ -315,8 +315,11 @@
           <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
         </button>
 
-        <!-- Form thêm lịch hẹn (ẩn mặc định) -->
+        <!-- Form thêm/sửa lịch hẹn (ẩn mặc định) -->
         <div id="apptForm" class="hidden shrink-0 space-y-2 border-t pt-2.5">
+          <div class="text-xs font-bold text-fuchsia-700 flex items-center gap-1.5" id="apptFormTitle">
+            <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
+          </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] font-bold text-slate-500">Ngày hẹn *</label>
@@ -330,7 +333,7 @@
           <div class="relative">
             <label class="text-[10px] font-bold text-slate-500">Địa điểm đón *</label>
             <div class="flex gap-1.5 mt-0.5">
-              <input id="apptLocationInput" type="text" placeholder="Nhập địa chỉ, bấm Enter hoặc nút tìm..." autocomplete="off" class="flex-1 border rounded-lg p-2 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" onkeydown="if(event.key==='Enter') triggerAddressSearch('appt')">
+              <input id="apptLocationInput" type="text" placeholder="Nhập địa chỉ đón..." autocomplete="off" class="flex-1 border rounded-lg p-2 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" oninput="handleAddressInput('appt')" onkeydown="if(event.key==='Enter') triggerAddressSearch('appt')">
               <button onclick="triggerAddressSearch('appt')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
@@ -339,6 +342,16 @@
               </button>
             </div>
             <div id="apptSuggestBox" class="autocomplete-items hidden"></div>
+          </div>
+          <div class="relative">
+            <label class="text-[10px] font-bold text-slate-500">Điểm đến (không bắt buộc)</label>
+            <div class="flex gap-1.5 mt-0.5">
+              <input id="apptDestInput" type="text" placeholder="Nhập địa chỉ điểm đến..." autocomplete="off" class="flex-1 border rounded-lg p-2 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500" oninput="handleAddressInput('apptDest')" onkeydown="if(event.key==='Enter') triggerAddressSearch('apptDest')">
+              <button onclick="triggerAddressSearch('apptDest')" title="Tìm địa chỉ" class="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 rounded-lg text-xs flex items-center justify-center active:scale-95 transition">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+            </div>
+            <div id="apptDestSuggestBox" class="autocomplete-items hidden"></div>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -359,7 +372,7 @@
             <label class="text-[10px] font-bold text-slate-500">Ghi chú (không bắt buộc)</label>
             <input id="apptNoteInput" type="text" placeholder="VD: đón tại cổng B, mang theo hành lý lớn..." class="w-full border rounded-lg p-2 mt-0.5 outline-none text-xs focus:ring-1 focus:ring-fuchsia-500">
           </div>
-          <button onclick="saveNewAppointment()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition active:scale-95">
+          <button onclick="saveAppointmentForm()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition active:scale-95">
             <i class="fa-solid fa-check"></i> Lưu lịch hẹn
           </button>
         </div>
@@ -1109,22 +1122,38 @@
       }
     });
 
-    // ================= TÌM ĐỊA CHỈ (Nominatim/OpenStreetMap) =================
-    // QUAN TRỌNG: theo đúng chính sách sử dụng của Nominatim (chỉ tìm khi người dùng CHỦ ĐỘNG bấm nút/Enter,
-    // KHÔNG tự động gợi ý theo từng ký tự gõ - kiểu "auto-complete" bị chính sách của họ cấm và sẽ bị chặn IP).
-    // Xem: https://operations.osmfoundation.org/policies/nominatim/
-    let lastAddressSearchAt = 0; // để tự giới hạn không quá 1 yêu cầu/giây theo đúng chính sách
+    // ================= TÌM ĐỊA CHỈ (dùng Photon - by Komoot, dựa trên dữ liệu OpenStreetMap) =================
+    // Đổi từ Nominatim sang Photon vì Photon được thiết kế đúng cho việc "gợi ý khi đang gõ" (search-as-you-type),
+    // trong khi Nominatim cấm việc này và tự động chặn IP. Xem: https://github.com/komoot/photon
+    let addressDebounceTimer = null;
+    let lastAddressSearchAt = 0; // tự giới hạn không gọi quá dồn dập để tôn trọng chính sách "dùng công bằng" của dịch vụ miễn phí
     const addressSearchCache = new Map(); // lưu lại kết quả các từ khoá đã tìm để tránh gọi lại y hệt
 
+    function handleAddressInput(type) {
+      clearTimeout(addressDebounceTimer);
+      const inputEl = type === 'start' ? document.getElementById('inputStart') : type === 'end' ? document.getElementById('inputEnd') : type === 'apptDest' ? document.getElementById('apptDestInput') : document.getElementById('apptLocationInput');
+      const query = inputEl.value.trim();
+      if (query.length < 2) { closeAllSuggestBoxes(); return; }
+      addressDebounceTimer = setTimeout(() => searchLocations(query, type), 400);
+    }
+
     function triggerAddressSearch(type) {
-      const inputEl = type === 'start' ? document.getElementById('inputStart') : type === 'end' ? document.getElementById('inputEnd') : document.getElementById('apptLocationInput');
+      clearTimeout(addressDebounceTimer);
+      const inputEl = type === 'start' ? document.getElementById('inputStart') : type === 'end' ? document.getElementById('inputEnd') : type === 'apptDest' ? document.getElementById('apptDestInput') : document.getElementById('apptLocationInput');
       const query = inputEl.value.trim();
       if (query.length < 2) { closeAllSuggestBoxes(); return; }
       searchLocations(query, type);
     }
 
+    function getSuggestBoxEl(type) {
+      if (type === 'start') return document.getElementById('startSuggestBox');
+      if (type === 'end') return document.getElementById('endSuggestBox');
+      if (type === 'apptDest') return document.getElementById('apptDestSuggestBox');
+      return document.getElementById('apptSuggestBox');
+    }
+
     async function searchLocations(query, type) {
-      const suggestBox = type === 'start' ? document.getElementById('startSuggestBox') : type === 'end' ? document.getElementById('endSuggestBox') : document.getElementById('apptSuggestBox');
+      const suggestBox = getSuggestBoxEl(type);
       const cacheKey = `${query.toLowerCase()}`;
 
       if (addressSearchCache.has(cacheKey)) {
@@ -1132,9 +1161,9 @@
         return;
       }
 
-      // Tự giới hạn tần suất gọi (không quá 1 lần/giây) để tuân thủ chính sách và tránh bị chặn IP
+      // Tự giãn cách tối thiểu giữa các lần gọi để dùng dịch vụ miễn phí một cách công bằng, tránh bị giới hạn
       const now = Date.now();
-      const waitMs = Math.max(0, 1000 - (now - lastAddressSearchAt));
+      const waitMs = Math.max(0, 350 - (now - lastAddressSearchAt));
 
       suggestBox.innerHTML = '<div class="p-2 text-center text-gray-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tìm địa chỉ...</div>';
       suggestBox.classList.remove('hidden');
@@ -1144,23 +1173,29 @@
       let results = [];
       let fetchError = null;
       try {
-        const urlOsm = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=5&addressdetails=1`;
-        const res = await fetch(urlOsm, { headers: { 'Accept-Language': 'vi' } });
+        // lat/lon dùng để ưu tiên kết quả quanh khu vực Việt Nam
+        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=vi&lat=16.0&lon=106.0`;
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (data && data.length > 0) {
-          results = data.map(item => ({
-            name: item.display_name.split(',')[0],
-            fullAddress: item.display_name,
-            coords: [parseFloat(item.lat), parseFloat(item.lon)]
-          }));
+        if (data && data.features && data.features.length > 0) {
+          results = data.features.map(f => {
+            const p = f.properties || {};
+            const parts = [p.name, p.street, p.city, p.state, p.country].filter(Boolean);
+            const uniqueParts = [...new Set(parts)];
+            return {
+              name: p.name || uniqueParts[0] || query,
+              fullAddress: uniqueParts.join(', '),
+              coords: [f.geometry.coordinates[1], f.geometry.coordinates[0]] // Photon trả về [lon, lat] -> đổi thành [lat, lon]
+            };
+          });
         }
       } catch (e) {
         fetchError = e;
         console.warn("Lỗi tìm địa chỉ:", e);
       }
       if (fetchError) {
-        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Không tìm được địa chỉ lúc này (dịch vụ tìm địa chỉ miễn phí đang quá tải/giới hạn). Vui lòng thử lại sau ít phút.</div>';
+        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Không tìm được địa chỉ lúc này. Vui lòng thử lại sau ít phút hoặc kiểm tra kết nối mạng.</div>';
         suggestBox.classList.remove('hidden');
         return;
       }
@@ -1169,6 +1204,7 @@
     }
 
     let apptSelectedCoords = null; // toạ độ địa điểm đón được chọn khi tạo lịch hẹn (nếu có)
+    let apptDestCoords = null; // toạ độ điểm đến được chọn khi tạo lịch hẹn (nếu có)
 
     function renderSuggestions(results, type, suggestBox) {
       suggestBox.innerHTML = '';
@@ -1193,6 +1229,9 @@
           } else if (type === 'end') {
             document.getElementById('inputEnd').value = item.name;
             currentEndCoords = item.coords;
+          } else if (type === 'apptDest') {
+            document.getElementById('apptDestInput').value = item.name;
+            apptDestCoords = item.coords;
           } else {
             document.getElementById('apptLocationInput').value = item.name;
             apptSelectedCoords = item.coords;
@@ -1213,6 +1252,8 @@
       document.getElementById('endSuggestBox').classList.add('hidden');
       const apptBox = document.getElementById('apptSuggestBox');
       if (apptBox) apptBox.classList.add('hidden');
+      const apptDestBox = document.getElementById('apptDestSuggestBox');
+      if (apptDestBox) apptDestBox.classList.add('hidden');
     }
 
     // ================= LỊCH HẸN ĐÓN KHÁCH =================
@@ -1235,6 +1276,7 @@
     function openAppointmentModal() {
       document.getElementById('appointmentModal').classList.remove('hidden');
       document.getElementById('apptForm').classList.add('hidden');
+      editingApptId = null;
       renderAppointmentList();
       // Xin quyền thông báo lần đầu người dùng mở tính năng này (không hỏi ngay từ lúc mở app để tránh làm phiền)
       if (!apptNotificationAsked && 'Notification' in window && Notification.permission === 'default') {
@@ -1247,28 +1289,64 @@
       document.getElementById('appointmentModal').classList.add('hidden');
     }
 
+    let editingApptId = null; // null = đang thêm mới, có giá trị = đang sửa lịch hẹn có id này
+
+    function resetApptFormFields() {
+      const today = new Date();
+      document.getElementById('apptDateInput').value = today.toISOString().slice(0, 10);
+      document.getElementById('apptTimeInput').value = '';
+      document.getElementById('apptLocationInput').value = '';
+      document.getElementById('apptDestInput').value = '';
+      document.getElementById('apptNameInput').value = '';
+      document.getElementById('apptPhoneInput').value = '';
+      document.getElementById('apptPriceInput').value = '';
+      document.getElementById('apptNoteInput').value = '';
+      apptSelectedCoords = null;
+      apptDestCoords = null;
+    }
+
     function toggleApptForm() {
       const form = document.getElementById('apptForm');
       const isHidden = form.classList.contains('hidden');
-      form.classList.toggle('hidden');
       if (isHidden) {
-        // Mặc định điền sẵn ngày hôm nay để đỡ phải bấm chọn lại
-        const today = new Date();
-        document.getElementById('apptDateInput').value = today.toISOString().slice(0, 10);
-        document.getElementById('apptTimeInput').value = '';
-        document.getElementById('apptLocationInput').value = '';
-        document.getElementById('apptNameInput').value = '';
-        document.getElementById('apptPhoneInput').value = '';
-        document.getElementById('apptPriceInput').value = '';
-        document.getElementById('apptNoteInput').value = '';
-        apptSelectedCoords = null;
+        editingApptId = null;
+        document.getElementById('apptFormTitle').innerHTML = '<i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới';
+        resetApptFormFields();
+        form.classList.remove('hidden');
+      } else {
+        form.classList.add('hidden');
       }
     }
 
-    async function saveNewAppointment() {
+    function editAppointment(id) {
+      const list = loadAppointments();
+      const item = list.find(a => a.id === id);
+      if (!item) return;
+      editingApptId = id;
+
+      const dt = new Date(item.dateTime);
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('apptDateInput').value = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+      document.getElementById('apptTimeInput').value = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      document.getElementById('apptLocationInput').value = item.location || '';
+      document.getElementById('apptDestInput').value = item.destination || '';
+      document.getElementById('apptNameInput').value = item.customerName || '';
+      document.getElementById('apptPhoneInput').value = item.phone || '';
+      document.getElementById('apptPriceInput').value = item.price ? formatNumberWithDots(item.price) : '';
+      document.getElementById('apptNoteInput').value = item.note || '';
+      apptSelectedCoords = item.coords || null;
+      apptDestCoords = item.destCoords || null;
+
+      document.getElementById('apptFormTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Sửa lịch hẹn';
+      document.getElementById('apptForm').classList.remove('hidden');
+      document.getElementById('apptForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function saveAppointmentForm() {
       const date = document.getElementById('apptDateInput').value;
       const time = document.getElementById('apptTimeInput').value;
       const location = document.getElementById('apptLocationInput').value.trim();
+      const destination = document.getElementById('apptDestInput').value.trim();
       const name = document.getElementById('apptNameInput').value.trim();
       const phone = document.getElementById('apptPhoneInput').value.trim();
       const price = parseFormattedNumber(document.getElementById('apptPriceInput').value);
@@ -1282,23 +1360,45 @@
       if (isNaN(dateTime.getTime())) { await customAlert("Ngày/giờ không hợp lệ!"); return; }
 
       const list = loadAppointments();
-      list.push({
-        id: 'appt_' + Date.now(),
-        dateTime: dateTime.toISOString(),
-        location,
-        coords: apptSelectedCoords,
-        customerName: name,
-        phone,
-        price,
-        note,
-        status: 'pending',
-        reminded: false
-      });
+
+      if (editingApptId) {
+        const item = list.find(a => a.id === editingApptId);
+        if (item) {
+          item.dateTime = dateTime.toISOString();
+          item.location = location;
+          item.coords = apptSelectedCoords;
+          item.destination = destination;
+          item.destCoords = apptDestCoords;
+          item.customerName = name;
+          item.phone = phone;
+          item.price = price;
+          item.note = note;
+          item.reminded = false; // sửa lại giờ hẹn thì cho nhắc lại từ đầu
+        }
+      } else {
+        list.push({
+          id: 'appt_' + Date.now(),
+          dateTime: dateTime.toISOString(),
+          location,
+          coords: apptSelectedCoords,
+          destination,
+          destCoords: apptDestCoords,
+          customerName: name,
+          phone,
+          price,
+          note,
+          status: 'pending',
+          reminded: false
+        });
+      }
+
       saveAppointments(list);
-      toggleApptForm(); // đóng form lại
+      const wasEditing = !!editingApptId;
+      editingApptId = null;
+      document.getElementById('apptForm').classList.add('hidden');
       renderAppointmentList();
       updateApptBadge();
-      await customAlert("Đã lưu lịch hẹn!");
+      await customAlert(wasEditing ? "Đã cập nhật lịch hẹn!" : "Đã lưu lịch hẹn!");
     }
 
     async function markAppointmentDone(id) {
@@ -1377,12 +1477,14 @@
             <div class="flex justify-between items-start gap-2 mb-1">
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeColor}">${badgeText}</span>
               <div class="flex gap-1 shrink-0">
+                <button onclick="editAppointment('${item.id}')" title="Sửa lịch hẹn" class="text-slate-500 hover:bg-slate-100 w-6 h-6 rounded-lg flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
                 <button onclick="openMapsForAppointment('${item.id}')" title="Mở Google Maps dẫn đường" class="text-blue-600 hover:bg-blue-50 w-6 h-6 rounded-lg flex items-center justify-center"><i class="fa-solid fa-diamond-turn-right text-xs"></i></button>
                 ${!isDone ? `<button onclick="markAppointmentDone('${item.id}')" title="Đánh dấu đã đón khách" class="text-emerald-600 hover:bg-emerald-50 w-6 h-6 rounded-lg flex items-center justify-center"><i class="fa-solid fa-check text-xs"></i></button>` : ''}
                 <button onclick="deleteAppointment('${item.id}')" title="Xoá" class="text-rose-500 hover:bg-rose-50 w-6 h-6 rounded-lg flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
               </div>
             </div>
             <div class="text-xs font-bold text-slate-800 flex items-center gap-1"><i class="fa-solid fa-location-dot text-fuchsia-500"></i> ${item.location}</div>
+            ${item.destination ? `<div class="text-[11px] text-slate-600 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-flag-checkered text-blue-400"></i> ${item.destination}</div>` : ''}
             ${item.customerName || item.phone ? `<div class="text-[11px] text-slate-600 mt-0.5">${item.customerName || ''}${item.customerName && item.phone ? ' - ' : ''}${item.phone || ''}</div>` : ''}
             ${item.price ? `<div class="text-[11px] font-bold text-emerald-600 mt-0.5"><i class="fa-solid fa-sack-dollar mr-0.5"></i>${formatNumberWithDots(item.price)} đ${isDone ? ' (đã cộng doanh thu)' : ''}</div>` : ''}
             ${item.note ? `<div class="text-[11px] text-slate-500 italic mt-0.5">${item.note}</div>` : ''}
