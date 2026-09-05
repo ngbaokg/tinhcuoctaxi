@@ -185,7 +185,7 @@
               <div id="endSuggestBox" class="autocomplete-items hidden"></div>
             </div>
           </div>
-          <p class="text-[9px] text-gray-400 text-right -mt-1.5 mb-2">Tìm địa chỉ bởi <a href="https://photon.komoot.io/" target="_blank" class="underline">Photon/Komoot</a> · Dữ liệu © <a href="https://www.openstreetmap.org/copyright" target="_blank" class="underline">OpenStreetMap</a></p>
+          <p class="text-[9px] text-gray-400 text-right -mt-1.5 mb-2">Tìm địa chỉ bởi <a href="https://www.geoapify.com/" target="_blank" class="underline">Geoapify</a> · Dữ liệu © <a href="https://www.openstreetmap.org/copyright" target="_blank" class="underline">OpenStreetMap</a></p>
 
           <div class="grid grid-cols-3 gap-2">
             <button onclick="openGoogleMapsDirect()" class="col-span-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs shadow transition active:scale-95 flex items-center justify-center gap-1">
@@ -1168,7 +1168,27 @@
       return document.getElementById('apptSuggestBox');
     }
 
-    // Nguồn 1: Photon (Komoot) - máy chủ demo miễn phí, hỗ trợ gợi ý khi gõ
+    // ================= TÌM ĐỊA CHỈ - NGUỒN CHÍNH: GEOAPIFY (trả phí/hạn mức riêng, ổn định hơn hẳn) =================
+    const GEOAPIFY_API_KEY = '660b78db81d747f5b98bba1456604ac1'; // hạn mức miễn phí 3.000 lượt/ngày, không dùng chung với người khác trên thế giới
+
+    // Nguồn chính: Geoapify - có hạn mức riêng, ổn định, không bị chặn IP do dùng chung với người khác
+    async function fetchFromGeoapify(query) {
+      const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&lang=vi&filter=countrycode:vn&bias=proximity:106.0,16.0&limit=6&apiKey=${GEOAPIFY_API_KEY}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Geoapify HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data || !data.features) return [];
+      return data.features.map(f => {
+        const p = f.properties || {};
+        return {
+          name: p.name || p.address_line1 || p.street || query,
+          fullAddress: p.formatted || p.address_line2 || '',
+          coords: [p.lat, p.lon]
+        };
+      });
+    }
+
+    // Nguồn dự phòng 1: Photon (Komoot) - máy chủ demo miễn phí, hỗ trợ gợi ý khi gõ
     async function fetchFromPhoton(query) {
       const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=vi&lat=16.0&lon=106.0`;
       const res = await fetch(url);
@@ -1187,7 +1207,7 @@
       });
     }
 
-    // Nguồn 2 (dự phòng): Nominatim (OpenStreetMap) - dùng khi Photon lỗi/quá tải
+    // Nguồn dự phòng 2: Nominatim (OpenStreetMap) - dùng khi cả Geoapify lẫn Photon đều lỗi
     async function fetchFromNominatim(query) {
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=6&addressdetails=1`;
       const res = await fetch(url, { headers: { 'Accept-Language': 'vi' } });
@@ -1220,25 +1240,28 @@
       lastAddressSearchAt = Date.now();
 
       let results = [];
-      let bothFailed = false;
+      let allFailed = false;
 
-      // QUAN TRỌNG: cả Photon lẫn Nominatim đều là máy chủ demo MIỄN PHÍ, có thể tạm ngừng/giới hạn
-      // bất cứ lúc nào ngoài tầm kiểm soát của app. Để không bị phụ thuộc vào 1 nguồn duy nhất,
-      // app sẽ tự thử nguồn dự phòng khi nguồn chính lỗi, trước khi báo lỗi cho người dùng.
+      // Thử lần lượt: Geoapify (nguồn chính, ổn định) -> Photon -> Nominatim (2 nguồn dự phòng miễn phí)
       try {
-        results = await fetchFromPhoton(query);
+        results = await fetchFromGeoapify(query);
       } catch (e1) {
-        console.warn("Photon lỗi, thử nguồn dự phòng Nominatim:", e1);
+        console.warn("Geoapify lỗi, thử Photon:", e1);
         try {
-          results = await fetchFromNominatim(query);
+          results = await fetchFromPhoton(query);
         } catch (e2) {
-          console.warn("Nominatim cũng lỗi:", e2);
-          bothFailed = true;
+          console.warn("Photon cũng lỗi, thử Nominatim:", e2);
+          try {
+            results = await fetchFromNominatim(query);
+          } catch (e3) {
+            console.warn("Cả 3 nguồn đều lỗi:", e3);
+            allFailed = true;
+          }
         }
       }
 
-      if (bothFailed) {
-        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Cả 2 dịch vụ tìm địa chỉ miễn phí đều đang quá tải/gián đoạn. Vui lòng thử lại sau ít phút.</div>';
+      if (allFailed) {
+        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Không thể tìm địa chỉ lúc này (mất mạng hoặc dịch vụ gián đoạn). Vui lòng thử lại.</div>';
         suggestBox.classList.remove('hidden');
         return;
       }
