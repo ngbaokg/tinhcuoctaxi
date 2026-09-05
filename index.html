@@ -1168,6 +1168,39 @@
       return document.getElementById('apptSuggestBox');
     }
 
+    // Nguồn 1: Photon (Komoot) - máy chủ demo miễn phí, hỗ trợ gợi ý khi gõ
+    async function fetchFromPhoton(query) {
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=vi&lat=16.0&lon=106.0`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Photon HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data || !data.features) return [];
+      return data.features.map(f => {
+        const p = f.properties || {};
+        const parts = [p.name, p.street, p.city, p.state, p.country].filter(Boolean);
+        const uniqueParts = [...new Set(parts)];
+        return {
+          name: p.name || uniqueParts[0] || query,
+          fullAddress: uniqueParts.join(', '),
+          coords: [f.geometry.coordinates[1], f.geometry.coordinates[0]] // Photon trả [lon, lat] -> đổi [lat, lon]
+        };
+      });
+    }
+
+    // Nguồn 2 (dự phòng): Nominatim (OpenStreetMap) - dùng khi Photon lỗi/quá tải
+    async function fetchFromNominatim(query) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=6&addressdetails=1`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'vi' } });
+      if (!res.ok) throw new Error(`Nominatim HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data || data.length === 0) return [];
+      return data.map(item => ({
+        name: item.display_name.split(',')[0],
+        fullAddress: item.display_name,
+        coords: [parseFloat(item.lat), parseFloat(item.lon)]
+      }));
+    }
+
     async function searchLocations(query, type) {
       const suggestBox = getSuggestBoxEl(type);
       const cacheKey = `${query.toLowerCase()}`;
@@ -1187,31 +1220,25 @@
       lastAddressSearchAt = Date.now();
 
       let results = [];
-      let fetchError = null;
+      let bothFailed = false;
+
+      // QUAN TRỌNG: cả Photon lẫn Nominatim đều là máy chủ demo MIỄN PHÍ, có thể tạm ngừng/giới hạn
+      // bất cứ lúc nào ngoài tầm kiểm soát của app. Để không bị phụ thuộc vào 1 nguồn duy nhất,
+      // app sẽ tự thử nguồn dự phòng khi nguồn chính lỗi, trước khi báo lỗi cho người dùng.
       try {
-        // lat/lon dùng để ưu tiên kết quả quanh khu vực Việt Nam
-        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=vi&lat=16.0&lon=106.0`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data && data.features && data.features.length > 0) {
-          results = data.features.map(f => {
-            const p = f.properties || {};
-            const parts = [p.name, p.street, p.city, p.state, p.country].filter(Boolean);
-            const uniqueParts = [...new Set(parts)];
-            return {
-              name: p.name || uniqueParts[0] || query,
-              fullAddress: uniqueParts.join(', '),
-              coords: [f.geometry.coordinates[1], f.geometry.coordinates[0]] // Photon trả về [lon, lat] -> đổi thành [lat, lon]
-            };
-          });
+        results = await fetchFromPhoton(query);
+      } catch (e1) {
+        console.warn("Photon lỗi, thử nguồn dự phòng Nominatim:", e1);
+        try {
+          results = await fetchFromNominatim(query);
+        } catch (e2) {
+          console.warn("Nominatim cũng lỗi:", e2);
+          bothFailed = true;
         }
-      } catch (e) {
-        fetchError = e;
-        console.warn("Lỗi tìm địa chỉ:", e);
       }
-      if (fetchError) {
-        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Không tìm được địa chỉ lúc này. Vui lòng thử lại sau ít phút hoặc kiểm tra kết nối mạng.</div>';
+
+      if (bothFailed) {
+        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Cả 2 dịch vụ tìm địa chỉ miễn phí đều đang quá tải/gián đoạn. Vui lòng thử lại sau ít phút.</div>';
         suggestBox.classList.remove('hidden');
         return;
       }
