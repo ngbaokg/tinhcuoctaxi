@@ -11,17 +11,15 @@
   <meta name="apple-mobile-web-app-title" content="Taxi AI">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     .autocomplete-items {
-      position: absolute;
+      position: relative;
+      margin-top: 0.375rem;
       border: 1px solid #cbd5e1;
-      z-index: 9999;
-      top: 100%;
-      left: 0;
-      right: 0;
       background-color: #ffffff;
       border-radius: 0.75rem;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
       max-height: 200px;
       overflow-y: auto;
     }
@@ -271,7 +269,7 @@
 
     <!-- Tóm tắt doanh thu hôm nay: nằm NGOÀI vùng cuộn nên luôn cố định hiển thị, không bao giờ bị khuất -->
     <div class="shrink-0 z-20 bg-blue-50/95 backdrop-blur border-t border-blue-100 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] px-3.5 py-2.5 flex justify-between items-center text-xs" style="padding-bottom: max(0.625rem, env(safe-area-inset-bottom));">
-      <span class="text-gray-600 font-medium"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> Doanh thu hôm nay:</span>
+      <span class="text-gray-600 font-medium"><i class="fa-solid fa-coins text-amber-500 mr-1"></i> Doanh thu hôm nay:</span>
       <div class="flex items-center gap-2">
         <span id="quickTodayFare" data-real="0 đ" class="font-bold text-blue-700 text-sm">••••••</span>
         <button onclick="toggleRevenueVisibility()" id="btnToggleRevenue" title="Hiện/ẩn doanh thu" class="text-gray-400 hover:text-blue-600 transition p-1 active:scale-90">
@@ -303,6 +301,18 @@
           <button onclick="closeAppointmentModal()" class="text-gray-400 hover:text-gray-600 text-lg">
             <i class="fa-solid fa-xmark"></i>
           </button>
+        </div>
+
+        <!-- Khối đăng nhập / đồng bộ Google Calendar -->
+        <div id="gcalSyncBox" class="shrink-0 mb-3 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <i class="fa-brands fa-google text-slate-500"></i>
+            <span id="gcalStatusText" class="text-slate-600 truncate">Chưa đăng nhập Google</span>
+          </div>
+          <div class="flex gap-1.5 shrink-0">
+            <button id="gcalSyncBtn" onclick="syncAllAppointmentsToGoogle()" class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px]">Đồng bộ</button>
+            <button id="gcalSignInBtn" onclick="signInGoogleCalendar()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px]">Đăng nhập</button>
+          </div>
         </div>
 
         <!-- QUAN TRỌNG: gộp chung danh sách + nút + form vào 1 vùng cuộn duy nhất,
@@ -1262,6 +1272,118 @@
       if (apptDestBox) apptDestBox.classList.add('hidden');
     }
 
+    // ================= ĐĂNG NHẬP & ĐỒNG BỘ GOOGLE CALENDAR =================
+    // QUAN TRỌNG - CẦN CẤU HÌNH TRƯỚC KHI DÙNG:
+    // 1. Vào https://console.cloud.google.com/ tạo 1 project mới (miễn phí)
+    // 2. Vào "APIs & Services" > "Library" > bật "Google Calendar API"
+    // 3. Vào "APIs & Services" > "OAuth consent screen" > tạo màn hình đồng ý (chọn "External", điền thông tin cơ bản,
+    //    thêm chính bạn vào mục "Test users" nếu app chưa xuất bản/xác minh)
+    // 4. Vào "APIs & Services" > "Credentials" > "Create Credentials" > "OAuth client ID" > chọn "Web application"
+    //    - Ở mục "Authorized JavaScript origins", thêm đúng địa chỉ web app của bạn, ví dụ:
+    //      https://ngbaokg.github.io
+    // 5. Copy "Client ID" vừa tạo, dán thay vào biến GOOGLE_CLIENT_ID bên dưới
+    const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'; // <-- THAY BẰNG CLIENT ID CỦA BẠN
+
+    let googleTokenClient = null;
+    let googleAccessToken = null;
+
+    function initGoogleAuthIfNeeded() {
+      if (googleTokenClient || typeof google === 'undefined' || !google.accounts) return;
+      googleTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/calendar.events',
+        callback: (response) => {
+          if (response && response.access_token) {
+            googleAccessToken = response.access_token;
+            updateGcalUI(true);
+            syncAllAppointmentsToGoogle();
+          }
+        }
+      });
+    }
+
+    function signInGoogleCalendar() {
+      if (GOOGLE_CLIENT_ID.includes('YOUR_GOOGLE_CLIENT_ID')) {
+        customAlert("Tính năng này cần cấu hình Google Client ID trước. Xem hướng dẫn trong mã nguồn (biến GOOGLE_CLIENT_ID) hoặc hỏi lại để được hướng dẫn từng bước.");
+        return;
+      }
+      initGoogleAuthIfNeeded();
+      if (!googleTokenClient) { customAlert("Không thể tải dịch vụ đăng nhập Google. Kiểm tra kết nối mạng và thử lại."); return; }
+      googleTokenClient.requestAccessToken();
+    }
+
+    function updateGcalUI(signedIn) {
+      document.getElementById('gcalStatusText').innerText = signedIn ? 'Đã đăng nhập Google' : 'Chưa đăng nhập Google';
+      document.getElementById('gcalSignInBtn').classList.toggle('hidden', signedIn);
+      document.getElementById('gcalSyncBtn').classList.toggle('hidden', !signedIn);
+    }
+
+    // Đẩy 1 lịch hẹn lên Google Calendar: tạo mới nếu chưa có, cập nhật nếu đã từng đồng bộ trước đó
+    async function syncOneAppointmentToGoogle(item) {
+      if (!googleAccessToken) return false;
+      const start = new Date(item.dateTime);
+      const end = new Date(start.getTime() + 30 * 60000); // mặc định sự kiện dài 30 phút
+      const eventBody = {
+        summary: `Đón khách: ${item.location}`,
+        location: item.location,
+        description: [
+          item.destination ? `Điểm đến: ${item.destination}` : '',
+          item.customerName ? `Khách: ${item.customerName}` : '',
+          item.phone ? `SĐT: ${item.phone}` : '',
+          item.price ? `Giá dự kiến: ${formatNumberWithDots(item.price)} đ` : '',
+          item.note ? `Ghi chú: ${item.note}` : ''
+        ].filter(Boolean).join('\n'),
+        start: { dateTime: start.toISOString() },
+        end: { dateTime: end.toISOString() }
+      };
+
+      try {
+        const url = item.googleEventId
+          ? `https://www.googleapis.com/calendar/v3/calendars/primary/events/${item.googleEventId}`
+          : `https://www.googleapis.com/calendar/v3/calendars/primary/events`;
+        const method = item.googleEventId ? 'PATCH' : 'POST';
+        const res = await fetch(url, {
+          method,
+          headers: { 'Authorization': `Bearer ${googleAccessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(eventBody)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        item.googleEventId = data.id;
+        return true;
+      } catch (e) {
+        console.warn("Lỗi đồng bộ Google Calendar:", e);
+        return false;
+      }
+    }
+
+    async function syncAllAppointmentsToGoogle() {
+      if (!googleAccessToken) { signInGoogleCalendar(); return; }
+      const list = loadAppointments();
+      const pending = list.filter(a => a.status === 'pending');
+      let successCount = 0;
+      for (const item of pending) {
+        const ok = await syncOneAppointmentToGoogle(item);
+        if (ok) successCount++;
+      }
+      saveAppointments(list);
+      renderAppointmentList();
+      await customAlert(`Đã đồng bộ ${successCount}/${pending.length} lịch hẹn lên Google Calendar.`);
+    }
+
+    // Xoá sự kiện tương ứng trên Google Calendar (gọi khi tài xế xoá lịch hẹn trong app, nếu lịch đó đã từng đồng bộ)
+    async function deleteGoogleCalendarEvent(googleEventId) {
+      if (!googleAccessToken || !googleEventId) return;
+      try {
+        await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${googleEventId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${googleAccessToken}` }
+        });
+      } catch (e) {
+        console.warn("Không thể xoá sự kiện trên Google Calendar:", e);
+      }
+    }
+
     // ================= LỊCH HẸN ĐÓN KHÁCH =================
     const APPT_STORAGE_KEY = 'taxi_appointments';
     const APPT_REMIND_BEFORE_MIN = 20; // nhắc trước giờ hẹn bao nhiêu phút
@@ -1286,6 +1408,8 @@
       editingApptId = null;
       closeAllSuggestBoxes(); // tránh ô gợi ý/lỗi tìm địa chỉ còn sót lại từ lần mở trước
       renderAppointmentList();
+      updateGcalUI(!!googleAccessToken);
+      initGoogleAuthIfNeeded();
       // Xin quyền thông báo lần đầu người dùng mở tính năng này (không hỏi ngay từ lúc mở app để tránh làm phiền)
       if (!apptNotificationAsked && 'Notification' in window && Notification.permission === 'default') {
         apptNotificationAsked = true;
@@ -1375,6 +1499,7 @@
       if (isNaN(dateTime.getTime())) { await customAlert("Ngày/giờ không hợp lệ!"); return; }
 
       const list = loadAppointments();
+      let savedItem = null;
 
       if (editingApptId) {
         const item = list.find(a => a.id === editingApptId);
@@ -1389,9 +1514,10 @@
           item.price = price;
           item.note = note;
           item.reminded = false; // sửa lại giờ hẹn thì cho nhắc lại từ đầu
+          savedItem = item;
         }
       } else {
-        list.push({
+        savedItem = {
           id: 'appt_' + Date.now(),
           dateTime: dateTime.toISOString(),
           location,
@@ -1404,10 +1530,18 @@
           note,
           status: 'pending',
           reminded: false
-        });
+        };
+        list.push(savedItem);
       }
 
       saveAppointments(list);
+
+      // Nếu đã đăng nhập Google, tự động đồng bộ ngay lịch hẹn vừa lưu lên Google Calendar
+      if (googleAccessToken && savedItem) {
+        await syncOneAppointmentToGoogle(savedItem);
+        saveAppointments(list);
+      }
+
       const wasEditing = !!editingApptId;
       editingApptId = null;
       document.getElementById('apptForm').classList.add('hidden');
@@ -1447,6 +1581,10 @@
     async function deleteAppointment(id) {
       if (!(await customConfirm("Xoá lịch hẹn này?"))) return;
       let list = loadAppointments();
+      const item = list.find(a => a.id === id);
+      if (item && item.googleEventId) {
+        deleteGoogleCalendarEvent(item.googleEventId); // xoá luôn bên Google Calendar nếu lịch này đã từng đồng bộ
+      }
       list = list.filter(a => a.id !== id);
       saveAppointments(list);
       renderAppointmentList();
@@ -2134,10 +2272,10 @@
         const extraText = t.extraFee && t.extraFee > 0 ? ` (+${formatNumberWithDots(t.extraFee)}đ phụ phí)` : '';
 
         const row = document.createElement('div');
-        row.className = "bg-gray-50 border border-gray-100 p-2.5 rounded-xl flex justify-between items-center";
+        row.className = "bg-gray-50 border border-gray-100 p-2.5 rounded-xl flex justify-between items-center gap-2";
         row.innerHTML = `
-          <div>
-            <div class="flex items-center gap-1.5">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
               <span class="font-bold text-gray-800 text-sm">${formatNumberWithDots(t.total)} đ</span>
               <span class="text-[9px] px-1.5 py-0.5 rounded font-semibold ${badgeColor}">${t.mode || 'Theo Km'}</span>
               ${payMethodBadge}
@@ -2145,6 +2283,9 @@
             <div class="text-gray-400 text-[10px]">${tDate.toLocaleDateString('vi-VN')} ${tDate.toLocaleTimeString('vi-VN')} | ${t.distance} km (${t.duration})${extraText}</div>
             <div class="text-gray-600 italic text-[11px] mt-0.5">${t.note}</div>
           </div>
+          <button onclick="deleteTripRecord(${t.id})" title="Xoá chuyến này (vd: chuyến chỉ để test)" class="shrink-0 text-rose-500 hover:bg-rose-50 w-7 h-7 rounded-lg flex items-center justify-center">
+            <i class="fa-solid fa-trash text-xs"></i>
+          </button>
         `;
         listEl.appendChild(row);
       });
@@ -2155,6 +2296,15 @@
       const quickFareEl = document.getElementById('quickTodayFare');
       quickFareEl.dataset.real = `${formatNumberWithDots(dayTotal)} đ`;
       quickFareEl.innerText = isRevenueVisible ? quickFareEl.dataset.real : '••••••';
+    }
+
+    // Xoá 1 chuyến cụ thể khỏi lịch sử/doanh thu (hữu ích khi chuyến đó chỉ để test chức năng, không phải doanh thu thật)
+    async function deleteTripRecord(id) {
+      if (!(await customConfirm("Xoá chuyến này khỏi lịch sử và doanh thu?"))) return;
+      let trips = JSON.parse(localStorage.getItem('taxi_trips') || '[]');
+      trips = trips.filter(t => t.id !== id);
+      localStorage.setItem('taxi_trips', JSON.stringify(trips));
+      loadHistoryAndStats();
     }
 
     // ================= SAO LƯU / PHỤC HỒI DỮ LIỆU (XUẤT-NHẬP FILE JSON) =================
