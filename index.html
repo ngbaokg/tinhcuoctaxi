@@ -229,7 +229,7 @@
           </button>
         </div>
 
-        <!-- Nút Thông dịch viên AI 2 chiều (dùng trong lúc chở khách, đặt gần Bắt đầu/Kết thúc cho tiện thao tác) -->
+        <!-- Nút Thông dịch viên AI 2 chiều -->
         <button onclick="openTranslateModal()" class="w-full bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-2.5 rounded-2xl shadow active:scale-95 transition flex items-center justify-center gap-1.5 text-sm mb-2 border border-indigo-500">
           <i class="fa-solid fa-language"></i> <span id="translateBtnLabel">Thông dịch 2 chiều</span>
         </button>
@@ -267,7 +267,7 @@
       </div>
     </div>
 
-    <!-- Tóm tắt doanh thu hôm nay: nằm NGOÀI vùng cuộn nên luôn cố định hiển thị, không bao giờ bị khuất -->
+    <!-- Tóm tắt doanh thu hôm nay -->
     <div class="shrink-0 z-20 bg-blue-50/95 backdrop-blur border-t border-blue-100 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] px-3.5 py-2.5 flex justify-between items-center text-xs" style="padding-bottom: max(0.625rem, env(safe-area-inset-bottom));">
       <span class="text-gray-600 font-medium"><i class="fa-solid fa-coins text-amber-500 mr-1"></i> Doanh thu hôm nay:</span>
       <div class="flex items-center gap-2">
@@ -278,8 +278,7 @@
       </div>
     </div>
 
-    <!-- ================= MODAL THÔNG DỊCH VIÊN AI 2 CHIỀU ================= -->
-    <!-- ================= HỘP THOẠI THÔNG BÁO RIÊNG CỦA APP (thay cho alert/confirm/prompt mặc định của trình duyệt) ================= -->
+    <!-- HỘP THOẠI THÔNG BÁO RIÊNG CỦA APP -->
     <div id="customDialogModal" class="fixed inset-0 bg-black/60 z-[200] hidden items-center justify-center p-4">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-4">
         <p id="customDialogMessage" class="text-sm text-gray-800 whitespace-pre-line mb-3 leading-relaxed"></p>
@@ -291,7 +290,7 @@
       </div>
     </div>
 
-    <!-- ================= MODAL LỊCH HẸN ĐÓN KHÁCH ================= -->
+    <!-- MODAL LỊCH HẸN ĐÓN KHÁCH -->
     <div id="appointmentModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-end sm:items-center justify-center p-3 hidden">
       <div class="bg-white rounded-3xl w-full max-w-sm p-4 shadow-2xl flex flex-col max-h-[90vh]">
         <div class="flex justify-between items-center border-b pb-2 shrink-0 mb-3">
@@ -311,26 +310,20 @@
           </div>
           <div class="flex gap-1.5 shrink-0">
             <button id="gcalSyncBtn" onclick="syncAllAppointmentsToGoogle()" class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px]">Đồng bộ</button>
-            <button id="gcalSignInBtn" onclick="signInGoogleCalendar()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px]">Đăng nhập</button>
+            <button id="gcalSignInBtn" onclick="signInGoogleCalendar(false)" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px]">Đăng nhập</button>
           </div>
         </div>
 
-        <!-- QUAN TRỌNG: gộp chung danh sách + nút + form vào 1 vùng cuộn duy nhất,
-             để khi form dài (nhiều trường), luôn kéo xuống được tới nút "Lưu lịch hẹn" ở cuối,
-             thay vì để nút Lưu bị cắt ngoài vùng nhìn thấy như trước đây. -->
         <div class="overflow-y-auto flex-1 space-y-3 min-h-0">
-
           <!-- Danh sách lịch hẹn -->
-          <div id="appointmentList" class="space-y-2">
-            <!-- render bằng JS -->
-          </div>
+          <div id="appointmentList" class="space-y-2"></div>
 
           <!-- Nút mở form thêm mới -->
           <button id="btnToggleApptForm" onclick="toggleApptForm()" class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex items-center justify-center gap-1.5">
             <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
           </button>
 
-          <!-- Form thêm/sửa lịch hẹn (ẩn mặc định) -->
+          <!-- Form thêm/sửa lịch hẹn -->
           <div id="apptForm" class="hidden space-y-2 border-t pt-2.5">
             <div class="text-xs font-bold text-fuchsia-700 flex items-center gap-1.5" id="apptFormTitle">
               <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
@@ -395,6 +388,7 @@
       </div>
     </div>
 
+    <!-- MODAL THÔNG DỊCH VIÊN AI -->
     <div id="translateModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-end sm:items-center justify-center p-3 hidden">
       <div class="bg-white rounded-3xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3 animate-fade-in relative max-h-[90vh]">
         <div class="flex justify-between items-center border-b pb-2">
@@ -406,7 +400,6 @@
           </button>
         </div>
 
-        <!-- Chọn ngôn ngữ khách đối thoại + nút mở Google Dịch (app thật) -->
         <div class="flex items-center justify-between bg-slate-100 p-2 rounded-xl text-xs gap-2">
           <span class="font-bold text-slate-700 shrink-0">Ngôn ngữ khách:</span>
           <select id="foreignLangSelect" class="border rounded-lg px-2 py-1 bg-white font-bold text-indigo-700 outline-none flex-1 min-w-0">
@@ -417,20 +410,17 @@
             <option value="ja-JP|ja|Tiếng Nhật">🇯🇵 Tiếng Nhật (日本語)</option>
             <option value="ru-RU|ru|Tiếng Nga">🇷🇺 Tiếng Nga (Русский)</option>
           </select>
-          <button onclick="openGoogleTranslateApp()" title="Mở app Google Dịch thật (chế độ Trò chuyện)" class="shrink-0 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 w-7 h-7 rounded-lg flex items-center justify-center transition active:scale-95">
+          <button onclick="openGoogleTranslateApp()" title="Mở app Google Dịch thật" class="shrink-0 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 w-7 h-7 rounded-lg flex items-center justify-center transition active:scale-95">
             <i class="fa-brands fa-google text-[11px]"></i>
           </button>
         </div>
 
-        <!-- Khung hiển thị nội dung dịch -->
         <div class="space-y-2 flex-1 overflow-y-auto max-h-56 pr-1 text-xs">
-          <!-- Phía tài xế -->
           <div class="bg-blue-50 border border-blue-200 p-2.5 rounded-2xl">
             <span class="text-[10px] font-bold text-blue-700 block mb-0.5">Tài xế (Tiếng Việt):</span>
             <div id="driverOriginalText" class="text-slate-800 italic">Bấm micro xanh bên dưới để bắt đầu nói chuyện trực tiếp...</div>
             <div id="driverTranslatedText" class="text-indigo-800 font-bold mt-1 border-t border-blue-100 pt-1">---</div>
           </div>
-          <!-- Phía khách -->
           <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-2xl">
             <span class="text-[10px] font-bold text-amber-800 block mb-0.5">Khách hàng:</span>
             <div id="guestOriginalText" class="text-slate-800 italic">Bấm micro vàng đưa khách nói chuyện trực tiếp...</div>
@@ -440,7 +430,6 @@
 
         <p class="text-[10px] text-gray-400 text-center -mt-1">Chế độ Trực tiếp: bấm 1 lần, nói xong tự dịch & đọc, rồi tự nghe câu tiếp theo. Bấm lại để dừng.</p>
 
-        <!-- 2 Nút bấm nói 2 chiều (chế độ Trực tiếp: bấm để bật/tắt, không cần bấm lại từng câu) -->
         <div class="grid grid-cols-2 gap-2 pt-1 border-t">
           <button id="btnDriverSpeak" onclick="toggleLiveTranslate('driver')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex flex-col items-center justify-center gap-1">
             <i class="fa-solid fa-microphone text-sm"></i>
@@ -454,7 +443,7 @@
       </div>
     </div>
 
-    <!-- ================= POPUP QUÉT MÃ VIETQR ================= -->
+    <!-- POPUP QUÉT MÃ VIETQR -->
     <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4 hidden">
       <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl flex flex-col items-center animate-fade-in relative text-center">
         <button onclick="closeQrModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
@@ -597,8 +586,6 @@
 
   <script>
     // ================= HỘP THOẠI THÔNG BÁO RIÊNG CỦA APP =================
-    // Thay thế alert()/confirm()/prompt() mặc định của trình duyệt (vốn luôn hiện kèm dòng "tên-miền cho biết")
-    // bằng hộp thoại tự thiết kế, chỉ hiện đúng nội dung thông báo của app.
     let _dialogResolve = null;
     let _dialogType = 'alert';
 
@@ -648,7 +635,7 @@
     let totalKm = 0;
     let secondsElapsed = 0;
     let prevPosition = null;
-    let tripStartTimestamp = null; // mốc thời gian thực (ms) lúc bấm "Bắt đầu", dùng để tính giờ chính xác kể cả khi tab bị nền hoá
+    let tripStartTimestamp = null;
 
     let currentStartCoords = null;
     let currentEndCoords = null;
@@ -663,14 +650,12 @@
     let currentGuestLang = 'vi';
     const guestGreetings = {
       vi: { welcomeText: "Xin chào quý khách!", welcomeSub: "Welcome", thankText: "Xin cám ơn quý khách!", thankSub: "Thank you!", speechWelcome: "Xin chào quý khách, chúc quý khách chuyến đi vui vẻ", speechThank: "Xin cám ơn quý khách và hẹn gặp lại", code: "vi-VN" },
-      fr: { welcomeText: "Bienvenue à bord!", welcomeSub: "Bon voyage", thankText: "Merci beaucoup!", thankSub: "Au revoir", speechWelcome: "Bienvenue à bord, passez un très bon voyage!", speechThank: "Merci beaucoup et au revoir!", code: "fr-FR" },
+      fr: { welcomeText: "Bienvenue à bord!", welcomeSub: "Bon voyage", thankText: "Merci beaucoup!", thankSub: "Au revoir", speechWelcome: "Bienvenue à bord, passez un rất bon voyage!", speechThank: "Merci beaucoup et au revoir!", code: "fr-FR" },
       en: { welcomeText: "Welcome on board!", welcomeSub: "Have a nice trip", thankText: "Thank you very much!", thankSub: "See you again", speechWelcome: "Welcome, have a nice trip!", speechThank: "Thank you very much, see you again!", code: "en-US" },
       zh: { welcomeText: "欢迎光临 (Huānyíng)!", welcomeSub: "Welcome", thankText: "非常感谢 (Xièxie)!", thankSub: "Thank you", speechWelcome: "欢迎光临，祝您旅途愉快", speechThank: "非常感谢，欢迎再次光临", code: "zh-CN" },
       ko: { welcomeText: "환영합니다 (Welcome)!", welcomeSub: "Welcome", thankText: "감사합니다 (Thank you)!", thankSub: "See you again", speechWelcome: "환영합니다. 즐거운 여행 되세요", speechThank: "감사합니다. 안녕히 가세요", code: "ko-KR" }
     };
 
-    // ================= TÍNH NĂNG THÔNG DỊCH VIÊN AI 2 CHIỀU =================
-    // ================= ẨN/HIỆN DOANH THU (BẢO MẬT RIÊNG TƯ) =================
     let isRevenueVisible = false;
 
     function toggleRevenueVisibility() {
@@ -691,27 +676,22 @@
     }
 
     function closeTranslateModal() {
-      stopLiveTranslate(); // đóng modal thì dừng luôn micro đang nghe, tránh nghe ngầm khi không cần
+      stopLiveTranslate();
       document.getElementById('translateModal').classList.add('hidden');
     }
 
-    // Mở app Google Dịch thật trên điện thoại (chế độ Trò chuyện/Live có sẵn của Google) khi tài xế muốn dùng bản chính chủ.
-    // Lưu ý: Google không cung cấp cách nhúng thẳng tính năng "Dịch trực tiếp" của app họ vào trang web khác.
-    // Dùng link HTTPS thẳng tới translate.google.com (thay vì cú pháp "intent://" trước đây) để tránh bị các đời
-    // Android mới ép mở CH Play trước — Android sẽ tự mở bằng app Google Dịch nếu đã cài, không thì mới ra web.
     function openGoogleTranslateApp() {
       window.open('https://translate.google.com/', '_blank');
     }
 
-    // ================= CHẾ ĐỘ DỊCH TRỰC TIẾP (LIVE): bấm 1 lần, nghe-dịch-đọc-nghe lại liên tục, không cần bấm lại từng câu =================
-    let liveModeSpeaker = null;  // 'driver' | 'guest' | null (đang tắt)
+    let liveModeSpeaker = null;
     let currentLiveRecognition = null;
 
     function toggleLiveTranslate(speaker) {
       if (liveModeSpeaker === speaker) {
         stopLiveTranslate();
       } else {
-        stopLiveTranslate(); // đảm bảo chỉ 1 bên nghe tại 1 thời điểm, tránh 2 mic chồng nhau
+        stopLiveTranslate();
         startLiveTranslate(speaker);
       }
     }
@@ -728,7 +708,7 @@
       liveModeSpeaker = null;
       if (currentLiveRecognition) {
         try {
-          currentLiveRecognition.onend = null; // gỡ auto-restart trước khi dừng hẳn
+          currentLiveRecognition.onend = null;
           currentLiveRecognition.onerror = null;
           currentLiveRecognition.stop();
         } catch (e) {}
@@ -757,16 +737,16 @@
     }
 
     function runLiveRecognitionCycle(speaker) {
-      if (liveModeSpeaker !== speaker) return; // đã bị tắt trước khi kịp chạy vòng tiếp theo
+      if (liveModeSpeaker !== speaker) return;
 
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const selVal = document.getElementById('foreignLangSelect').value.split('|');
-      const foreignCode = selVal[0]; // vd: fr-FR
-      const foreignLangKey = selVal[1]; // vd: fr
+      const foreignCode = selVal[0];
+      const foreignLangKey = selVal[1];
 
       const recog = new SpeechRecognition();
       recog.continuous = false;
-      recog.interimResults = true; // hiện chữ ngay khi đang nói, cảm giác phản hồi nhanh như "Live"
+      recog.interimResults = true;
       recog.lang = speaker === 'driver' ? 'vi-VN' : foreignCode;
       currentLiveRecognition = recog;
 
@@ -787,15 +767,12 @@
       };
 
       recog.onerror = (e) => {
-        // "no-speech" (im lặng) hoặc bị hệ thống ngắt giữa chừng là bình thường trong chế độ liên tục — tự nghe lại
         if (liveModeSpeaker === speaker) {
           setTimeout(() => runLiveRecognitionCycle(speaker), e.error === 'no-speech' ? 300 : 800);
         }
       };
 
       recog.onend = () => {
-        // Vòng nghe vừa kết thúc: nếu vẫn đang bật chế độ Trực tiếp cho người này thì tự động nghe lại ngay,
-        // tạo cảm giác "liên tục" giống ứng dụng Google Dịch, không cần bấm lại nút mỗi câu.
         if (liveModeSpeaker === speaker) {
           setTimeout(() => runLiveRecognitionCycle(speaker), 250);
         }
@@ -818,9 +795,6 @@
       speakTextDirect(translated, targetVoiceCode);
     }
 
-    // ================= DỊCH NHANH: BỘ CỤM TỪ TAXI THÔNG DỤNG (TRA CỨU TỨC THÌ, KHÔNG CẦN MẠNG) =================
-    // Các câu giao tiếp phổ biến nhất giữa tài xế và khách được dịch sẵn, chính xác hơn máy dịch tự động
-    // và trả lời ngay lập tức (0 độ trễ mạng) thay vì phải gọi API mỗi lần.
     const quickPhraseBank = [
       { vi: "Xin chào", en: "Hello", fr: "Bonjour", zh: "你好", ko: "안녕하세요" },
       { vi: "Cảm ơn", en: "Thank you", fr: "Merci", zh: "谢谢", ko: "감사합니다" },
@@ -852,9 +826,8 @@
       return (str || '').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').trim().replace(/\s+/g, ' ');
     }
 
-    // Xây sẵn 2 bảng tra cứu (chạy 1 lần lúc tải trang) để tra nhanh theo cả 2 chiều
-    const quickPhraseByVi = {};       // "cam on" -> { en, fr, zh, ko }
-    const quickPhraseByForeign = {};  // "en|thank you" -> { vi, en, fr, zh, ko } (dùng khi khách nói)
+    const quickPhraseByVi = {};
+    const quickPhraseByForeign = {};
     quickPhraseBank.forEach(entry => {
       quickPhraseByVi[stripVnTones(entry.vi)] = entry;
       ['en', 'fr', 'zh', 'ko'].forEach(lang => {
@@ -870,24 +843,21 @@
         const match = quickPhraseByForeign[`${fromLang}|${normalizeForeignText(text)}`];
         return match ? match.vi : null;
       }
-      return null; // không hỗ trợ tra nhanh giữa 2 ngôn ngữ nước ngoài với nhau, sẽ gọi API dịch
+      return null;
     }
 
-    // Bộ nhớ tạm trong phiên làm việc: câu đã dịch rồi thì lần sau hỏi lại trả lời ngay, không gọi mạng nữa
     const translationCache = new Map();
 
     async function translateTextOnline(text, fromLang, toLang) {
       const cacheKey = `${fromLang}|${toLang}|${text.trim().toLowerCase()}`;
       if (translationCache.has(cacheKey)) return translationCache.get(cacheKey);
 
-      // Bước 1: Tra cụm từ thông dụng — trả lời tức thì, không cần mạng
       const quickResult = lookupQuickPhrase(text, fromLang, toLang);
       if (quickResult) {
         translationCache.set(cacheKey, quickResult);
         return quickResult;
       }
 
-      // Bước 2: Gọi dịch qua mạng, có giới hạn thời gian chờ 5 giây để không bị "treo" lâu khi mạng yếu
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -1006,7 +976,6 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    // ================= DỊCH GIAO DIỆN CÁC NÚT CHÍNH THEO NGÔN NGỮ KHÁCH ĐANG CHỌN =================
     const uiTranslations = {
       vi: { start: 'Bắt đầu', running: 'Đang chạy...', end: 'Kết thúc', translate: 'Thông dịch 2 chiều', cashPay: 'Trả tiền mặt', qrPay: 'Chuyển khoản QR', fareLabel: 'Tổng cước', timeLabel: 'Thời gian', distanceLabel: 'Quãng đường', waitLabel: 'Cước chờ', meterTitle: 'Đồng hồ chuyến đi', agreedTitle: 'Cước thỏa thuận trọn gói' },
       en: { start: 'Start', running: 'Running...', end: 'End', translate: 'Two-way AI Interpreter', cashPay: 'Pay Cash', qrPay: 'Pay by QR', fareLabel: 'Total Fare', timeLabel: 'Time', distanceLabel: 'Distance', waitLabel: 'Wait Fee', meterTitle: 'Trip Meter', agreedTitle: 'Agreed Fixed Fare' },
@@ -1042,7 +1011,6 @@
         }
       });
       applyUILanguage(lang);
-      // Tự đồng bộ luôn select trong modal thông dịch
       const select = document.getElementById('foreignLangSelect');
       if (select) {
         for (let i = 0; i < select.options.length; i++) {
@@ -1092,9 +1060,6 @@
         if ('wakeLock' in navigator) {
           wakeLock = await navigator.wakeLock.request('screen');
           document.getElementById('wakeLockBadge').classList.remove('hidden');
-          // Trình duyệt tự huỷ Wake Lock khi tab bị ẩn (chuyển app khác) — không phải lỗi của app.
-          // QUAN TRỌNG: phải đặt lại wakeLock = null ở đây, nếu không biến này vẫn trỏ tới
-          // một WakeLockSentinel đã bị huỷ, khiến app tưởng lầm là "vẫn còn" và không xin lại khi quay về.
           wakeLock.addEventListener('release', () => {
             wakeLock = null;
             document.getElementById('wakeLockBadge').classList.add('hidden');
@@ -1114,9 +1079,6 @@
       }
     }
 
-    // Khi quay lại app (mở lại tab/mở lại từ app khác), tự xin lại Wake Lock nếu đang chạy chuyến,
-    // đồng thời cập nhật ngay đồng hồ thời gian cho khớp với thời gian thực đã trôi qua.
-    // Kiểm tra cả wakeLock.released (không chỉ dựa vào biến null) để chắc chắn không bỏ sót trường hợp nào.
     document.addEventListener('visibilitychange', async () => {
       if (document.visibilityState === 'visible' && isTripRunning) {
         if (!wakeLock || wakeLock.released) {
@@ -1130,20 +1092,16 @@
       }
     });
 
-    // Một số trình duyệt/di động còn bắn thêm sự kiện focus khi quay lại app (ngoài visibilitychange),
-    // gọi lại cùng logic để tăng độ chắc chắn Wake Lock được khôi phục.
     window.addEventListener('focus', async () => {
       if (isTripRunning && (!wakeLock || wakeLock.released)) {
         await requestWakeLock();
       }
     });
 
-    // ================= TÌM ĐỊA CHỈ (dùng Photon - by Komoot, dựa trên dữ liệu OpenStreetMap) =================
-    // Đổi từ Nominatim sang Photon vì Photon được thiết kế đúng cho việc "gợi ý khi đang gõ" (search-as-you-type),
-    // trong khi Nominatim cấm việc này và tự động chặn IP. Xem: https://github.com/komoot/photon
+    // ================= TÌM ĐỊA CHỈ =================
     let addressDebounceTimer = null;
-    let lastAddressSearchAt = 0; // tự giới hạn không gọi quá dồn dập để tôn trọng chính sách "dùng công bằng" của dịch vụ miễn phí
-    const addressSearchCache = new Map(); // lưu lại kết quả các từ khoá đã tìm để tránh gọi lại y hệt
+    let lastAddressSearchAt = 0;
+    const addressSearchCache = new Map();
 
     function handleAddressInput(type) {
       clearTimeout(addressDebounceTimer);
@@ -1168,10 +1126,8 @@
       return document.getElementById('apptSuggestBox');
     }
 
-    // ================= TÌM ĐỊA CHỈ - NGUỒN CHÍNH: GEOAPIFY (trả phí/hạn mức riêng, ổn định hơn hẳn) =================
-    const GEOAPIFY_API_KEY = '660b78db81d747f5b98bba1456604ac1'; // hạn mức miễn phí 3.000 lượt/ngày, không dùng chung với người khác trên thế giới
+    const GEOAPIFY_API_KEY = '660b78db81d747f5b98bba1456604ac1';
 
-    // Nguồn chính: Geoapify - có hạn mức riêng, ổn định, không bị chặn IP do dùng chung với người khác
     async function fetchFromGeoapify(query) {
       const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&lang=vi&filter=countrycode:vn&bias=proximity:106.0,16.0&limit=6&apiKey=${GEOAPIFY_API_KEY}`;
       const res = await fetch(url);
@@ -1188,7 +1144,6 @@
       });
     }
 
-    // Nguồn dự phòng 1: Photon (Komoot) - máy chủ demo miễn phí, hỗ trợ gợi ý khi gõ
     async function fetchFromPhoton(query) {
       const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=vi&lat=16.0&lon=106.0`;
       const res = await fetch(url);
@@ -1202,12 +1157,11 @@
         return {
           name: p.name || uniqueParts[0] || query,
           fullAddress: uniqueParts.join(', '),
-          coords: [f.geometry.coordinates[1], f.geometry.coordinates[0]] // Photon trả [lon, lat] -> đổi [lat, lon]
+          coords: [f.geometry.coordinates[1], f.geometry.coordinates[0]]
         };
       });
     }
 
-    // Nguồn dự phòng 2: Nominatim (OpenStreetMap) - dùng khi cả Geoapify lẫn Photon đều lỗi
     async function fetchFromNominatim(query) {
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=6&addressdetails=1`;
       const res = await fetch(url, { headers: { 'Accept-Language': 'vi' } });
@@ -1230,7 +1184,6 @@
         return;
       }
 
-      // Tự giãn cách tối thiểu giữa các lần gọi để dùng dịch vụ miễn phí một cách công bằng, tránh bị giới hạn
       const now = Date.now();
       const waitMs = Math.max(0, 350 - (now - lastAddressSearchAt));
 
@@ -1242,7 +1195,6 @@
       let results = [];
       let allFailed = false;
 
-      // Thử lần lượt: Geoapify (nguồn chính, ổn định) -> Photon -> Nominatim (2 nguồn dự phòng miễn phí)
       try {
         results = await fetchFromGeoapify(query);
       } catch (e1) {
@@ -1261,16 +1213,16 @@
       }
 
       if (allFailed) {
-        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Không thể tìm địa chỉ lúc này (mất mạng hoặc dịch vụ gián đoạn). Vui lòng thử lại.</div>';
+        suggestBox.innerHTML = '<div class="p-2.5 text-center text-rose-500 text-xs">⚠️ Không thể tìm địa chỉ lúc này. Vui lòng thử lại.</div>';
         suggestBox.classList.remove('hidden');
         return;
       }
-      addressSearchCache.set(cacheKey, results); // lưu cache, tra cùng từ khoá lần sau không cần gọi mạng lại
+      addressSearchCache.set(cacheKey, results);
       renderSuggestions(results, type, suggestBox);
     }
 
-    let apptSelectedCoords = null; // toạ độ địa điểm đón được chọn khi tạo lịch hẹn (nếu có)
-    let apptDestCoords = null; // toạ độ điểm đến được chọn khi tạo lịch hẹn (nếu có)
+    let apptSelectedCoords = null;
+    let apptDestCoords = null;
 
     function renderSuggestions(results, type, suggestBox) {
       suggestBox.innerHTML = '';
@@ -1322,20 +1274,24 @@
       if (apptDestBox) apptDestBox.classList.add('hidden');
     }
 
-    // ================= ĐĂNG NHẬP & ĐỒNG BỘ GOOGLE CALENDAR =================
-    // QUAN TRỌNG - CẦN CẤU HÌNH TRƯỚC KHI DÙNG:
-    // 1. Vào https://console.cloud.google.com/ tạo 1 project mới (miễn phí)
-    // 2. Vào "APIs & Services" > "Library" > bật "Google Calendar API"
-    // 3. Vào "APIs & Services" > "OAuth consent screen" > tạo màn hình đồng ý (chọn "External", điền thông tin cơ bản,
-    //    thêm chính bạn vào mục "Test users" nếu app chưa xuất bản/xác minh)
-    // 4. Vào "APIs & Services" > "Credentials" > "Create Credentials" > "OAuth client ID" > chọn "Web application"
-    //    - Ở mục "Authorized JavaScript origins", thêm đúng địa chỉ web app của bạn, ví dụ:
-    //      https://ngbaokg.github.io
-    // 5. Copy "Client ID" vừa tạo, dán thay vào biến GOOGLE_CLIENT_ID bên dưới
+    // ================= ĐĂNG NHẬP & ĐỒNG BỘ GOOGLE CALENDAR (ĐÃ NÂNG CẤP LƯU PHIÊN BỀN VỮNG) =================
     const GOOGLE_CLIENT_ID = '716343551019-gvshb80eamtcpap1gsvji2lbsmiohhkm.apps.googleusercontent.com';
+    const GCAL_TOKEN_KEY = 'gcal_access_token';
+    const GCAL_EXPIRE_KEY = 'gcal_token_expires_at';
 
     let googleTokenClient = null;
     let googleAccessToken = null;
+
+    // Lấy token đã lưu trong bộ nhớ máy nếu chưa hết hạn
+    function getValidSavedGoogleToken() {
+      const token = localStorage.getItem(GCAL_TOKEN_KEY);
+      const expiresAt = parseInt(localStorage.getItem(GCAL_EXPIRE_KEY) || '0', 10);
+      // Nếu token còn hạn sử dụng (trừ hao 60s để an toàn)
+      if (token && Date.now() < (expiresAt - 60000)) {
+        return token;
+      }
+      return null;
+    }
 
     function initGoogleAuthIfNeeded() {
       if (googleTokenClient || typeof google === 'undefined' || !google.accounts) return;
@@ -1345,34 +1301,65 @@
         callback: (response) => {
           if (response && response.access_token) {
             googleAccessToken = response.access_token;
+            const expiresInSec = response.expires_in || 3600;
+            // Lưu token và thời điểm hết hạn vào localStorage
+            localStorage.setItem(GCAL_TOKEN_KEY, googleAccessToken);
+            localStorage.setItem(GCAL_EXPIRE_KEY, Date.now() + expiresInSec * 1000);
+
             updateGcalUI(true);
-            syncAllAppointmentsToGoogle();
+            // Đăng nhập xong tự động đồng bộ ngay
+            syncAllAppointmentsToGoogle(true);
           }
         }
       });
     }
 
-    function signInGoogleCalendar() {
+    function signInGoogleCalendar(silent = false) {
       if (GOOGLE_CLIENT_ID.includes('YOUR_GOOGLE_CLIENT_ID')) {
-        customAlert("Tính năng này cần cấu hình Google Client ID trước. Xem hướng dẫn trong mã nguồn (biến GOOGLE_CLIENT_ID) hoặc hỏi lại để được hướng dẫn từng bước.");
+        customAlert("Tính năng này cần cấu hình Google Client ID trước.");
         return;
       }
       initGoogleAuthIfNeeded();
-      if (!googleTokenClient) { customAlert("Không thể tải dịch vụ đăng nhập Google. Kiểm tra kết nối mạng và thử lại."); return; }
-      googleTokenClient.requestAccessToken();
+      if (!googleTokenClient) { 
+        if (!silent) customAlert("Không thể tải dịch vụ đăng nhập Google. Kiểm tra kết nối mạng và thử lại."); 
+        return; 
+      }
+      // prompt: '' để xin cấp lại token âm thầm nếu đã từng đăng nhập trước đó
+      googleTokenClient.requestAccessToken({ prompt: silent ? '' : 'select_account' });
+    }
+
+    function checkAndRestoreGoogleAuth() {
+      const savedToken = getValidSavedGoogleToken();
+      if (savedToken) {
+        googleAccessToken = savedToken;
+        updateGcalUI(true);
+      } else if (localStorage.getItem(GCAL_TOKEN_KEY)) {
+        // Có lưu token cũ nhưng vừa hết hạn -> thử làm mới âm thầm
+        initGoogleAuthIfNeeded();
+        if (googleTokenClient) signInGoogleCalendar(true);
+      } else {
+        updateGcalUI(false);
+      }
     }
 
     function updateGcalUI(signedIn) {
-      document.getElementById('gcalStatusText').innerText = signedIn ? 'Đã đăng nhập Google' : 'Chưa đăng nhập Google';
-      document.getElementById('gcalSignInBtn').classList.toggle('hidden', signedIn);
-      document.getElementById('gcalSyncBtn').classList.toggle('hidden', !signedIn);
+      const statusText = document.getElementById('gcalStatusText');
+      const signInBtn = document.getElementById('gcalSignInBtn');
+      const syncBtn = document.getElementById('gcalSyncBtn');
+      if (statusText) statusText.innerText = signedIn ? 'Đã đăng nhập Google' : 'Chưa đăng nhập Google';
+      if (signInBtn) signInBtn.classList.toggle('hidden', signedIn);
+      if (syncBtn) syncBtn.classList.toggle('hidden', !signedIn);
     }
 
-    // Đẩy 1 lịch hẹn lên Google Calendar: tạo mới nếu chưa có, cập nhật nếu đã từng đồng bộ trước đó
+    // Đẩy 1 lịch hẹn lên Google Calendar
     async function syncOneAppointmentToGoogle(item) {
+      if (!googleAccessToken) {
+        googleAccessToken = getValidSavedGoogleToken();
+      }
       if (!googleAccessToken) return false;
+
       const start = new Date(item.dateTime);
-      const end = new Date(start.getTime() + 30 * 60000); // mặc định sự kiện dài 30 phút
+      const end = new Date(start.getTime() + 30 * 60000);
       const eventBody = {
         summary: `Đón khách: ${item.location}`,
         location: item.location,
@@ -1397,6 +1384,17 @@
           headers: { 'Authorization': `Bearer ${googleAccessToken}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(eventBody)
         });
+
+        // Nếu token hết hạn (HTTP 401 Unauthorized), xoá cache và xin lại token mới
+        if (res.status === 401) {
+          localStorage.removeItem(GCAL_TOKEN_KEY);
+          localStorage.removeItem(GCAL_EXPIRE_KEY);
+          googleAccessToken = null;
+          updateGcalUI(false);
+          signInGoogleCalendar(true);
+          return false;
+        }
+
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         item.googleEventId = data.id;
@@ -1407,8 +1405,14 @@
       }
     }
 
-    async function syncAllAppointmentsToGoogle() {
-      if (!googleAccessToken) { signInGoogleCalendar(); return; }
+    async function syncAllAppointmentsToGoogle(silent = false) {
+      if (!googleAccessToken) {
+        googleAccessToken = getValidSavedGoogleToken();
+      }
+      if (!googleAccessToken) { 
+        signInGoogleCalendar(false); 
+        return; 
+      }
       const list = loadAppointments();
       const pending = list.filter(a => a.status === 'pending');
       let successCount = 0;
@@ -1418,11 +1422,13 @@
       }
       saveAppointments(list);
       renderAppointmentList();
-      await customAlert(`Đã đồng bộ ${successCount}/${pending.length} lịch hẹn lên Google Calendar.`);
+      if (!silent) {
+        await customAlert(`Đã đồng bộ ${successCount}/${pending.length} lịch hẹn lên Google Calendar.`);
+      }
     }
 
-    // Xoá sự kiện tương ứng trên Google Calendar (gọi khi tài xế xoá lịch hẹn trong app, nếu lịch đó đã từng đồng bộ)
     async function deleteGoogleCalendarEvent(googleEventId) {
+      if (!googleAccessToken) googleAccessToken = getValidSavedGoogleToken();
       if (!googleAccessToken || !googleEventId) return;
       try {
         await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${googleEventId}`, {
@@ -1436,7 +1442,7 @@
 
     // ================= LỊCH HẸN ĐÓN KHÁCH =================
     const APPT_STORAGE_KEY = 'taxi_appointments';
-    const APPT_REMIND_BEFORE_MIN = 20; // nhắc trước giờ hẹn bao nhiêu phút
+    const APPT_REMIND_BEFORE_MIN = 20;
     let apptNotificationAsked = false;
 
     function loadAppointments() {
@@ -1456,11 +1462,13 @@
       document.getElementById('apptForm').classList.add('hidden');
       document.getElementById('btnToggleApptForm').innerHTML = '<i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới';
       editingApptId = null;
-      closeAllSuggestBoxes(); // tránh ô gợi ý/lỗi tìm địa chỉ còn sót lại từ lần mở trước
+      closeAllSuggestBoxes();
       renderAppointmentList();
-      updateGcalUI(!!googleAccessToken);
+      
+      // Tự khôi phục đăng nhập nếu còn hạn
+      checkAndRestoreGoogleAuth();
       initGoogleAuthIfNeeded();
-      // Xin quyền thông báo lần đầu người dùng mở tính năng này (không hỏi ngay từ lúc mở app để tránh làm phiền)
+
       if (!apptNotificationAsked && 'Notification' in window && Notification.permission === 'default') {
         apptNotificationAsked = true;
         Notification.requestPermission();
@@ -1471,7 +1479,7 @@
       document.getElementById('appointmentModal').classList.add('hidden');
     }
 
-    let editingApptId = null; // null = đang thêm mới, có giá trị = đang sửa lịch hẹn có id này
+    let editingApptId = null;
 
     function resetApptFormFields() {
       const today = new Date();
@@ -1485,7 +1493,7 @@
       document.getElementById('apptNoteInput').value = '';
       apptSelectedCoords = null;
       apptDestCoords = null;
-      closeAllSuggestBoxes(); // xoá ô gợi ý/lỗi cũ (nếu có) khi mở form thêm mới
+      closeAllSuggestBoxes();
     }
 
     function toggleApptForm() {
@@ -1510,7 +1518,7 @@
       const item = list.find(a => a.id === id);
       if (!item) return;
       editingApptId = id;
-      closeAllSuggestBoxes(); // xoá ô gợi ý/lỗi cũ (nếu có) trước khi điền dữ liệu để sửa
+      closeAllSuggestBoxes();
 
       const dt = new Date(item.dateTime);
       const pad = n => String(n).padStart(2, '0');
@@ -1563,7 +1571,7 @@
           item.phone = phone;
           item.price = price;
           item.note = note;
-          item.reminded = false; // sửa lại giờ hẹn thì cho nhắc lại từ đầu
+          item.reminded = false;
           savedItem = item;
         }
       } else {
@@ -1586,7 +1594,8 @@
 
       saveAppointments(list);
 
-      // Nếu đã đăng nhập Google, tự động đồng bộ ngay lịch hẹn vừa lưu lên Google Calendar
+      // Nếu đã đăng nhập, tự động đồng bộ ngay lên Google Calendar
+      if (!googleAccessToken) googleAccessToken = getValidSavedGoogleToken();
       if (googleAccessToken && savedItem) {
         await syncOneAppointmentToGoogle(savedItem);
         saveAppointments(list);
@@ -1607,7 +1616,6 @@
       item.status = 'done';
       saveAppointments(list);
 
-      // Nếu lịch hẹn có ghi giá tiền, tự động cộng số tiền này vào doanh thu (giống 1 cuốc xe hoàn thành)
       if (item.price && item.price > 0) {
         saveTrip({
           id: Date.now(),
@@ -1633,7 +1641,7 @@
       let list = loadAppointments();
       const item = list.find(a => a.id === id);
       if (item && item.googleEventId) {
-        deleteGoogleCalendarEvent(item.googleEventId); // xoá luôn bên Google Calendar nếu lịch này đã từng đồng bộ
+        deleteGoogleCalendarEvent(item.googleEventId);
       }
       list = list.filter(a => a.id !== id);
       saveAppointments(list);
@@ -1657,7 +1665,6 @@
     function renderAppointmentList() {
       const container = document.getElementById('appointmentList');
       let list = loadAppointments();
-      // Sắp xếp: lịch chưa hoàn thành lên trước theo thời gian gần nhất, lịch đã xong xuống cuối
       list.sort((a, b) => {
         if (a.status !== b.status) return a.status === 'done' ? 1 : -1;
         return new Date(a.dateTime) - new Date(b.dateTime);
@@ -1709,7 +1716,6 @@
       }
     }
 
-    // Kiểm tra định kỳ xem có lịch hẹn nào sắp tới giờ để nhắc tài xế (chạy khi app đang mở)
     function checkAppointmentReminders() {
       const list = loadAppointments();
       const now = new Date();
@@ -1733,7 +1739,6 @@
 
       if (changed) saveAppointments(list);
 
-      // Cập nhật banner nhắc nhở trên màn hình chính cho lịch hẹn gần nhất (trong vòng nhắc trước hoặc đã quá giờ dưới 1 tiếng)
       const banner = document.getElementById('apptReminderBanner');
       if (nearest) {
         const dt = new Date(nearest.dateTime);
@@ -1754,14 +1759,12 @@
 
     function fireAppointmentReminder(item) {
       const msg = `Sắp đến giờ đón khách lúc ${formatApptDateTime(item.dateTime)} tại ${item.location}${item.customerName ? ' (' + item.customerName + ')' : ''}`;
-      // Thông báo hệ thống (nếu được cấp quyền) - vẫn hiện được kể cả khi app đang chạy nền
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
           new Notification('🔔 Lịch hẹn đón khách', { body: msg, tag: item.id });
         } catch (e) {}
       }
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      // Đọc to nhắc nhở bằng giọng nói tiếng Việt, hữu ích khi tài xế đang lái xe không tiện nhìn màn hình
       try {
         const utter = new SpeechSynthesisUtterance(msg);
         utter.lang = 'vi-VN';
@@ -1795,7 +1798,6 @@
       window.open(gmapUrl, '_blank');
     }
 
-    // Mở Google Maps dẫn đường thẳng tới địa điểm đón khách đã nhập trong lịch hẹn (từ vị trí hiện tại của tài xế)
     function openMapsForAppointmentInput() {
       const locText = document.getElementById('apptLocationInput').value.trim();
       if (!locText) { customAlert("Vui lòng nhập địa điểm đón trước!"); return; }
@@ -1803,7 +1805,6 @@
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${destParam}&travelmode=driving`, '_blank');
     }
 
-    // Mở Google Maps dẫn đường thẳng tới địa điểm của MỘT lịch hẹn cụ thể trong danh sách (bấm là đi luôn)
     function openMapsForAppointment(id) {
       const list = loadAppointments();
       const item = list.find(a => a.id === id);
@@ -1972,9 +1973,6 @@
       setStartButtonState('running');
       document.getElementById('btnEnd').disabled = false;
 
-      // Tính giờ theo mốc thời gian thực (tripStartTimestamp) thay vì đếm cộng dồn từng giây,
-      // để khi trình duyệt bị throttle/nền hoá lúc chuyển app khác, đồng hồ vẫn tự "bắt kịp" đúng thời gian thực khi quay lại,
-      // thay vì bị dừng lại rồi chạy tiếp từ chỗ dừng (sai lệch so với thời gian thực đã trôi qua).
       timerInterval = setInterval(() => {
         secondsElapsed = Math.floor((Date.now() - tripStartTimestamp) / 1000);
         document.getElementById('displayTime').innerText = formatTime(secondsElapsed);
@@ -1985,15 +1983,13 @@
         watchId = navigator.geolocation.watchPosition((pos) => {
           const { latitude, longitude, accuracy } = pos.coords;
           const nowMs = Date.now();
-          if (accuracy > 30) return; // bỏ điểm định vị kém chính xác
+          if (accuracy > 30) return;
           if (prevPosition) {
             const d = getDistanceInKm(prevPosition.latitude, prevPosition.longitude, latitude, longitude);
             const dtSec = Math.max((nowMs - prevPosition.timeMs) / 1000, 1);
             const speedKmh = (d / dtSec) * 3600;
-            // Lọc điểm GPS nhảy: bỏ qua nếu tốc độ tính ra > 150km/h (không thực tế trong đô thị)
-            // hoặc quãng đường nhảy quá lớn trong thời gian quá ngắn (< 1 giây)
             if (speedKmh > 150) {
-              prevPosition = { latitude, longitude, timeMs: nowMs }; // vẫn cập nhật vị trí gốc, chỉ bỏ cộng dồn km
+              prevPosition = { latitude, longitude, timeMs: nowMs };
               return;
             }
             if (d > 0.005) {
@@ -2194,12 +2190,11 @@
       renderProfileEditorCard();
     }
 
-    // ================= BẢO MẬT PIN (hash SHA-256, không lưu plaintext) =================
     const DEFAULT_PIN_HASH_KEY = 'cfg_pin_hash';
-    const LEGACY_PIN_KEY = 'cfg_pin'; // PIN cũ (plaintext) từ phiên bản trước, dùng để tự nâng cấp 1 lần
+    const LEGACY_PIN_KEY = 'cfg_pin';
 
     async function hashPin(pin) {
-      const enc = new TextEncoder().encode('taxiAI_salt_' + pin); // thêm salt cố định cho khó đoán hơn
+      const enc = new TextEncoder().encode('taxiAI_salt_' + pin);
       const buf = await crypto.subtle.digest('SHA-256', enc);
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
@@ -2216,7 +2211,6 @@
       }
       let storedHash = localStorage.getItem(DEFAULT_PIN_HASH_KEY);
       if (!storedHash) {
-        // Tự nâng cấp: nếu có PIN cũ dạng plaintext, hoặc chưa từng đặt PIN, mặc định là 1234
         const legacyPin = localStorage.getItem(LEGACY_PIN_KEY) || '1234';
         storedHash = await hashPin(legacyPin);
         localStorage.setItem(DEFAULT_PIN_HASH_KEY, storedHash);
@@ -2229,7 +2223,7 @@
       }
       pinFailCount++;
       if (pinFailCount >= 3) {
-        pinLockUntil = Date.now() + 30000; // khóa 30 giây sau 3 lần sai
+        pinLockUntil = Date.now() + 30000;
         pinFailCount = 0;
         await customAlert("Sai PIN 3 lần liên tiếp. Tạm khóa 30 giây.");
       } else {
@@ -2240,7 +2234,7 @@
 
     async function promptOpenSettings() {
       const inputPin = await customPrompt("Nhập mã PIN bảo mật (mặc định: 1234):");
-      if (inputPin === null) return; // người dùng bấm Hủy
+      if (inputPin === null) return;
       const ok = await verifyPin(inputPin);
       if (!ok) return;
 
@@ -2253,7 +2247,7 @@
       document.getElementById('bankCode').value = localStorage.getItem('cfg_bank') || '';
       document.getElementById('bankAcc').value = localStorage.getItem('cfg_acc') || '';
       document.getElementById('bankName').value = localStorage.getItem('cfg_name') || '';
-      document.getElementById('appPin').value = ''; // không hiển thị lại PIN cũ, để trống = giữ nguyên
+      document.getElementById('appPin').value = '';
       document.getElementById('settingsModal').classList.remove('hidden');
     }
 
@@ -2262,7 +2256,6 @@
     async function saveSettings() {
       saveCurrentEditingCard();
 
-      // ---- Validate dữ liệu trước khi lưu ----
       for (const p of rateProfiles) {
         if (p.threshold <= 0 || p.threshold > 999) { await customAlert(`Mốc chuyển km của "${p.name}" phải trong khoảng 1-999 km!`); return; }
         if (p.tier1 < 0 || p.tier2 < 0 || p.opening < 0) { await customAlert(`Giá cước của "${p.name}" không được là số âm!`); return; }
@@ -2333,7 +2326,7 @@
             <div class="text-gray-400 text-[10px]">${tDate.toLocaleDateString('vi-VN')} ${tDate.toLocaleTimeString('vi-VN')} | ${t.distance} km (${t.duration})${extraText}</div>
             <div class="text-gray-600 italic text-[11px] mt-0.5">${t.note}</div>
           </div>
-          <button onclick="deleteTripRecord(${t.id})" title="Xoá chuyến này (vd: chuyến chỉ để test)" class="shrink-0 text-rose-500 hover:bg-rose-50 w-7 h-7 rounded-lg flex items-center justify-center">
+          <button onclick="deleteTripRecord(${t.id})" title="Xoá chuyến này" class="shrink-0 text-rose-500 hover:bg-rose-50 w-7 h-7 rounded-lg flex items-center justify-center">
             <i class="fa-solid fa-trash text-xs"></i>
           </button>
         `;
@@ -2348,7 +2341,6 @@
       quickFareEl.innerText = isRevenueVisible ? quickFareEl.dataset.real : '••••••';
     }
 
-    // Xoá 1 chuyến cụ thể khỏi lịch sử/doanh thu (hữu ích khi chuyến đó chỉ để test chức năng, không phải doanh thu thật)
     async function deleteTripRecord(id) {
       if (!(await customConfirm("Xoá chuyến này khỏi lịch sử và doanh thu?"))) return;
       let trips = JSON.parse(localStorage.getItem('taxi_trips') || '[]');
@@ -2357,7 +2349,6 @@
       loadHistoryAndStats();
     }
 
-    // ================= SAO LƯU / PHỤC HỒI DỮ LIỆU (XUẤT-NHẬP FILE JSON) =================
     async function exportTripData() {
       const trips = JSON.parse(localStorage.getItem('taxi_trips') || '[]');
       if (trips.length === 0) { await customAlert("Chưa có dữ liệu chuyến đi nào để xuất."); return; }
@@ -2426,11 +2417,9 @@
       await customAlert("Đã xoá toàn bộ lịch sử.");
     }
 
-    // ================= KIỂM TRA HỖ TRỢ TRÌNH DUYỆT (ẨN NÚT NẾU KHÔNG HỖ TRỢ) =================
     function checkBrowserFeatureSupport() {
       const hasSpeechRecognition = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
       if (!hasSpeechRecognition) {
-        // Không hỗ trợ nhận diện giọng nói: ẩn nút trợ lý giọng nói + nút micro trong modal thông dịch
         const voiceBtn = document.getElementById('btnVoiceAssistant');
         if (voiceBtn) {
           voiceBtn.classList.add('opacity-30', 'pointer-events-none');
@@ -2446,10 +2435,8 @@
         });
       }
 
-      // Cảnh báo nếu Wake Lock (giữ màn hình sáng) không thể hoạt động do môi trường không đủ điều kiện:
-      // API này CHỈ chạy trên HTTPS hoặc localhost, KHÔNG chạy khi mở file trực tiếp (file://) hoặc HTTP thường.
       if (!('wakeLock' in navigator)) {
-        console.warn('Wake Lock API không khả dụng: cần mở trang qua HTTPS (hoặc localhost), không hỗ trợ khi mở trực tiếp file HTML hoặc HTTP thường.');
+        console.warn('Wake Lock API không khả dụng: cần mở trang qua HTTPS (hoặc localhost).');
         const badge = document.getElementById('wakeLockBadge');
         if (badge) {
           badge.title = "Thiết bị/trình duyệt này không hỗ trợ giữ màn hình sáng, hoặc trang chưa được mở qua HTTPS";
@@ -2464,14 +2451,16 @@
       checkBrowserFeatureSupport();
       updateApptBadge();
       checkAppointmentReminders();
-      setInterval(checkAppointmentReminders, 30000); // kiểm tra lịch hẹn mỗi 30 giây trong lúc app đang mở
+      setInterval(checkAppointmentReminders, 30000);
+
+      // Khôi phục đăng nhập Google Calendar ngay khi vào app
+      checkAndRestoreGoogleAuth();
+
       if ('speechSynthesis' in window) {
         window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
       }
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {
-          // Nếu chưa host sw.js/manifest.json cùng thư mục, app vẫn chạy bình thường (chỉ mất tính năng offline/cài đặt)
-        });
+        navigator.serviceWorker.register('sw.js').catch(() => {});
       }
     };
   </script>
