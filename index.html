@@ -73,9 +73,6 @@
           <i class="fa-solid fa-calendar-days text-sm"></i>
           <span id="apptBadge" class="hidden absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">0</span>
         </button>
-        <button onclick="openHistoryModal()" title="Lịch sử" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 rounded-full text-blue-400 border border-slate-700 shadow transition active:scale-95 flex items-center justify-center">
-          <i class="fa-solid fa-clock-rotate-left text-sm"></i>
-        </button>
         <button onclick="promptOpenSettings()" title="Cài đặt" class="w-8 h-8 bg-slate-800 hover:bg-slate-700 rounded-full text-yellow-400 border border-slate-700 shadow transition active:scale-95 flex items-center justify-center">
           <i class="fa-solid fa-gear text-sm"></i>
         </button>
@@ -476,51 +473,10 @@
       </div>
     </div>
 
-    <!-- Modal Lịch sử -->
-    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-end sm:items-center justify-center hidden">
-      <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md max-h-[85vh] p-5 shadow-2xl flex flex-col">
-        <div class="flex justify-between items-center border-b pb-3 mb-3">
-          <h3 class="font-bold text-base text-gray-800 flex items-center gap-2">
-            <i class="fa-solid fa-chart-pie text-blue-600"></i> Lịch Sử & Doanh Thu
-          </h3>
-          <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-gray-600 p-1">
-            <i class="fa-solid fa-xmark text-lg"></i>
-          </button>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 text-center text-xs mb-4">
-          <div class="bg-blue-50 border border-blue-100 p-2.5 rounded-xl">
-            <span class="text-gray-500">Hôm nay</span>
-            <div id="statToday" class="font-bold text-blue-700 text-xs mt-1">0 đ</div>
-          </div>
-          <div class="bg-indigo-50 border border-indigo-100 p-2.5 rounded-xl">
-            <span class="text-gray-500">Tháng này</span>
-            <div id="statMonth" class="font-bold text-indigo-700 text-xs mt-1">0 đ</div>
-          </div>
-          <div class="bg-purple-50 border border-purple-100 p-2.5 rounded-xl">
-            <span class="text-gray-500">Năm nay</span>
-            <div id="statYear" class="font-bold text-purple-700 text-xs mt-1">0 đ</div>
-          </div>
-        </div>
-
-        <div class="flex justify-between items-center mb-2 gap-2">
-          <span class="text-xs font-bold text-gray-600">Danh sách các chuyến</span>
-          <div class="flex gap-2.5 items-center">
-            <button onclick="exportTripData()" class="text-xs text-blue-600 hover:underline">Xuất file</button>
-            <button onclick="document.getElementById('importFileInput').click()" class="text-xs text-emerald-600 hover:underline">Nhập file</button>
-            <input id="importFileInput" type="file" accept="application/json" class="hidden" onchange="importTripData(this.files[0])">
-            <button onclick="clearHistory()" class="text-xs text-rose-500 hover:underline">Xoá toàn bộ</button>
-          </div>
-        </div>
-
-        <div id="historyList" class="space-y-2 overflow-y-auto flex-1 text-xs pr-1 max-h-72"></div>
-      </div>
-    </div>
-
-    <!-- Modal Cài đặt -->
+    <!-- Modal Cài đặt (chia theo tab: Bảng cước / Doanh thu / Tài khoản) -->
     <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 hidden">
-      <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl">
-        <div class="flex justify-between items-center mb-4 border-b pb-2">
+      <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="flex justify-between items-center mb-3 border-b pb-2 shrink-0">
           <h3 class="font-bold text-base text-gray-800 flex items-center gap-2">
             <i class="fa-solid fa-sliders text-emerald-600"></i> Cài Đặt Hệ Thống
           </h3>
@@ -529,67 +485,129 @@
           </button>
         </div>
 
-        <div class="space-y-3 text-xs max-h-[75vh] overflow-y-auto pr-1">
-          <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl space-y-3 shadow-inner">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-slate-800 flex items-center gap-1.5">
-                <i class="fa-solid fa-tags text-amber-500"></i> Quản Lý Bảng Cước
-              </span>
-              <button onclick="addNewRateProfile()" type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-1 rounded-lg text-[10px] shadow transition active:scale-95 flex items-center gap-1">
-                <i class="fa-solid fa-plus"></i> Thêm bảng
-              </button>
+        <!-- Thanh chọn tab -->
+        <div class="flex gap-1.5 mb-3 shrink-0 bg-gray-100 p-1 rounded-xl text-xs">
+          <button id="settingsTabBtn_rates" onclick="switchSettingsTab('rates')" class="flex-1 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1">
+            <i class="fa-solid fa-tags"></i> Bảng cước
+          </button>
+          <button id="settingsTabBtn_revenue" onclick="switchSettingsTab('revenue')" class="flex-1 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1">
+            <i class="fa-solid fa-chart-pie"></i> Doanh thu
+          </button>
+          <button id="settingsTabBtn_account" onclick="switchSettingsTab('account')" class="flex-1 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1">
+            <i class="fa-solid fa-building-columns"></i> Tài khoản
+          </button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 text-xs pr-1 min-h-0">
+
+          <!-- ===== TAB: BẢNG CƯỚC ===== -->
+          <div id="settingsTab_rates" class="space-y-3">
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl space-y-3 shadow-inner">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                  <i class="fa-solid fa-tags text-amber-500"></i> Quản Lý Bảng Cước
+                </span>
+                <button onclick="addNewRateProfile()" type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-1 rounded-lg text-[10px] shadow transition active:scale-95 flex items-center gap-1">
+                  <i class="fa-solid fa-plus"></i> Thêm bảng
+                </button>
+              </div>
+              <div id="profileTabsNav" class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none"></div>
+              <div id="profileEditorCard" class="bg-white border border-slate-200 p-3 rounded-xl space-y-2.5 shadow-sm"></div>
             </div>
-            <div id="profileTabsNav" class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none"></div>
-            <div id="profileEditorCard" class="bg-white border border-slate-200 p-3 rounded-xl space-y-2.5 shadow-sm"></div>
+
+            <div class="bg-purple-50/70 border border-purple-200 p-3 rounded-2xl space-y-2">
+              <div class="font-bold text-purple-800 flex items-center gap-1">
+                <i class="fa-solid fa-hourglass-half"></i> Cước Thời Gian Chờ
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-gray-700 font-medium">Miễn phí (phút đầu):</label>
+                  <input id="cfgWaitFreeMinutes" type="number" step="1" value="10" class="w-full border rounded-lg p-2 mt-0.5 outline-none focus:ring-1 focus:ring-purple-500 bg-white">
+                </div>
+                <div>
+                  <label class="text-gray-700 font-medium">Đơn giá (đ/phút):</label>
+                  <input id="cfgWaitRatePerMin" type="text" inputmode="numeric" value="1.000" class="w-full border rounded-lg p-2 mt-0.5 outline-none focus:ring-1 focus:ring-purple-500 bg-white font-semibold" oninput="handleCurrencyInput(this)">
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="bg-purple-50/70 border border-purple-200 p-3 rounded-2xl space-y-2">
-            <div class="font-bold text-purple-800 flex items-center gap-1">
-              <i class="fa-solid fa-hourglass-half"></i> Cước Thời Gian Chờ
+          <!-- ===== TAB: DOANH THU ===== -->
+          <div id="settingsTab_revenue" class="space-y-3 hidden">
+            <div class="grid grid-cols-2 gap-2 text-center">
+              <div class="bg-blue-50 border border-blue-100 p-2.5 rounded-xl">
+                <span class="text-gray-500">Hôm nay</span>
+                <div id="statToday" class="font-bold text-blue-700 text-xs mt-1">0 đ</div>
+              </div>
+              <div class="bg-indigo-50 border border-indigo-100 p-2.5 rounded-xl">
+                <span class="text-gray-500">Tháng này</span>
+                <div id="statMonth" class="font-bold text-indigo-700 text-xs mt-1">0 đ</div>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 p-2.5 rounded-xl">
+                <span class="text-gray-500">Tháng trước</span>
+                <div id="statLastMonth" class="font-bold text-amber-700 text-xs mt-1">0 đ</div>
+              </div>
+              <div class="bg-purple-50 border border-purple-100 p-2.5 rounded-xl">
+                <span class="text-gray-500">Năm nay</span>
+                <div id="statYear" class="font-bold text-purple-700 text-xs mt-1">0 đ</div>
+              </div>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="text-gray-700 font-medium">Miễn phí (phút đầu):</label>
-                <input id="cfgWaitFreeMinutes" type="number" step="1" value="10" class="w-full border rounded-lg p-2 mt-0.5 outline-none focus:ring-1 focus:ring-purple-500 bg-white">
+
+            <!-- Xem doanh thu theo 1 ngày cụ thể -->
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-2.5 flex items-center gap-2">
+              <input id="revenueDateFilter" type="date" class="flex-1 border rounded-lg p-1.5 outline-none text-xs">
+              <button onclick="viewRevenueByDate()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px]">Xem</button>
+              <button onclick="resetHistoryFilter()" title="Bỏ lọc, xem tất cả" class="bg-gray-200 hover:bg-gray-300 text-gray-600 w-7 h-7 rounded-lg flex items-center justify-center shrink-0"><i class="fa-solid fa-rotate-left text-[10px]"></i></button>
+            </div>
+            <div id="revenueDateFilterResult" class="hidden text-center bg-fuchsia-50 border border-fuchsia-200 text-fuchsia-700 font-bold rounded-xl p-2 text-xs"></div>
+
+            <div class="flex justify-between items-center gap-2">
+              <span class="text-xs font-bold text-gray-600">Danh sách các chuyến</span>
+              <div class="flex gap-2.5 items-center">
+                <button onclick="exportTripData()" class="text-xs text-blue-600 hover:underline">Xuất file</button>
+                <button onclick="document.getElementById('importFileInput').click()" class="text-xs text-emerald-600 hover:underline">Nhập file</button>
+                <input id="importFileInput" type="file" accept="application/json" class="hidden" onchange="importTripData(this.files[0])">
+                <button onclick="clearHistory()" class="text-xs text-rose-500 hover:underline">Xoá toàn bộ</button>
+              </div>
+            </div>
+            <div id="historyList" class="space-y-2 max-h-56 overflow-y-auto"></div>
+          </div>
+
+          <!-- ===== TAB: TÀI KHOẢN ===== -->
+          <div id="settingsTab_account" class="space-y-3 hidden">
+            <div class="border rounded-2xl p-3 space-y-2 bg-emerald-50/40 border-emerald-200">
+              <div class="font-bold text-emerald-800 flex items-center gap-1">
+                <i class="fa-solid fa-building-columns"></i> Tài khoản nhận VietQR
               </div>
               <div>
-                <label class="text-gray-700 font-medium">Đơn giá (đ/phút):</label>
-                <input id="cfgWaitRatePerMin" type="text" inputmode="numeric" value="1.000" class="w-full border rounded-lg p-2 mt-0.5 outline-none focus:ring-1 focus:ring-purple-500 bg-white font-semibold" oninput="handleCurrencyInput(this)">
+                <label class="text-gray-600">Mã ngân hàng (viết tắt):</label>
+                <input id="bankCode" placeholder="vd: MB, VCB, TCB, VPB..." class="w-full border rounded-lg p-2 mt-0.5 outline-none uppercase font-semibold">
+              </div>
+              <div>
+                <label class="text-gray-600">Số tài khoản nhận tiền:</label>
+                <input id="bankAcc" type="text" placeholder="Nhập số tài khoản" class="w-full border rounded-lg p-2 mt-0.5 outline-none font-semibold">
+              </div>
+              <div>
+                <label class="text-gray-600">Tên chủ tài khoản (không dấu):</label>
+                <input id="bankName" type="text" placeholder="vd: NGUYEN VAN A" class="w-full border rounded-lg p-2 mt-0.5 outline-none uppercase font-semibold">
               </div>
             </div>
-          </div>
 
-          <div class="border rounded-2xl p-3 space-y-2 bg-emerald-50/40 border-emerald-200">
-            <div class="font-bold text-emerald-800 flex items-center gap-1">
-              <i class="fa-solid fa-building-columns"></i> Tài khoản nhận VietQR
-            </div>
-            <div>
-              <label class="text-gray-600">Mã ngân hàng (viết tắt):</label>
-              <input id="bankCode" placeholder="vd: MB, VCB, TCB, VPB..." class="w-full border rounded-lg p-2 mt-0.5 outline-none uppercase font-semibold">
-            </div>
-            <div>
-              <label class="text-gray-600">Số tài khoản nhận tiền:</label>
-              <input id="bankAcc" type="text" placeholder="Nhập số tài khoản" class="w-full border rounded-lg p-2 mt-0.5 outline-none font-semibold">
-            </div>
-            <div>
-              <label class="text-gray-600">Tên chủ tài khoản (không dấu):</label>
-              <input id="bankName" type="text" placeholder="vd: NGUYEN VAN A" class="w-full border rounded-lg p-2 mt-0.5 outline-none uppercase font-semibold">
+            <div class="border-t pt-2">
+              <label class="font-semibold text-gray-700">Mã PIN mở Cài Đặt (4 số):</label>
+              <input id="appPin" type="password" maxlength="4" placeholder="Để trống nếu giữ nguyên PIN cũ" class="w-full border rounded-lg p-2 mt-1 outline-none text-center tracking-widest font-bold">
             </div>
           </div>
 
-          <div class="border-t pt-2">
-            <label class="font-semibold text-gray-700">Mã PIN mở Cài Đặt (4 số):</label>
-            <input id="appPin" type="password" maxlength="4" placeholder="Để trống nếu giữ nguyên PIN cũ" class="w-full border rounded-lg p-2 mt-1 outline-none text-center tracking-widest font-bold">
-          </div>
+        </div>
 
-          <div class="pt-2 flex gap-2">
-            <button onclick="saveSettings()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition">
-              Lưu thay đổi
-            </button>
-            <button onclick="closeSettings()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-4 py-2.5 rounded-xl transition">
-              Đóng
-            </button>
-          </div>
+        <div class="pt-3 flex gap-2 shrink-0 border-t mt-2">
+          <button onclick="saveSettings()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition">
+            Lưu thay đổi
+          </button>
+          <button onclick="closeSettings()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-4 py-2.5 rounded-xl transition">
+            Đóng
+          </button>
         </div>
       </div>
     </div>
@@ -2169,8 +2187,6 @@
 
     function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
     function confirmQrPaymentComplete() { closeQrModal(); }
-    function openHistoryModal() { loadHistoryAndStats(); document.getElementById('historyModal').classList.remove('hidden'); }
-    function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
 
     function renderProfileTabs() {
       const tabsNav = document.getElementById('profileTabsNav');
@@ -2195,12 +2211,12 @@
       const p = rateProfiles[editingProfileIndex] || rateProfiles[0];
       const isRemovable = rateProfiles.length > 1;
       card.innerHTML = `
-        <div class="flex justify-between items-center pb-1.5 border-b border-slate-100">
-          <div class="flex items-center gap-1.5 flex-1 mr-2">
-            <span class="text-slate-500 font-medium text-[11px]">Tên bảng:</span>
-            <input id="edProfileName" type="text" value="${p.name || ''}" class="border rounded-lg px-2 py-1 text-xs font-bold text-slate-800 flex-1 outline-none focus:ring-1 focus:ring-slate-800 bg-slate-50" placeholder="VD: BẢNG 1 / XE 7 CHỖ">
+        <div class="flex justify-between items-center gap-2 pb-1.5 border-b border-slate-100">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="text-slate-500 font-medium text-[11px] shrink-0">Tên bảng:</span>
+            <input id="edProfileName" type="text" value="${p.name || ''}" class="border rounded-lg px-2 py-1 text-xs font-bold text-slate-800 w-28 outline-none focus:ring-1 focus:ring-slate-800 bg-slate-50" placeholder="VD: BẢNG 1">
           </div>
-          ${isRemovable ? `<button onclick="removeCurrentProfile()" type="button" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 transition"><i class="fa-solid fa-trash-can mr-1"></i> Xóa</button>` : ''}
+          ${isRemovable ? `<button onclick="removeCurrentProfile()" type="button" title="Xoá bảng này" class="shrink-0 text-rose-500 hover:text-rose-700 w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 transition flex items-center justify-center"><i class="fa-solid fa-trash-can text-xs"></i></button>` : ''}
         </div>
         <div class="grid grid-cols-2 gap-2 pt-1">
           <div>
@@ -2299,7 +2315,18 @@
       return false;
     }
 
-    async function promptOpenSettings() {
+    function switchSettingsTab(tab) {
+      ['rates', 'revenue', 'account'].forEach(t => {
+        document.getElementById(`settingsTab_${t}`).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById(`settingsTabBtn_${t}`);
+        btn.className = t === tab
+          ? "flex-1 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1 bg-white shadow-sm text-slate-900"
+          : "flex-1 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1 text-gray-500";
+      });
+      if (tab === 'revenue') loadHistoryAndStats();
+    }
+
+    async function promptOpenSettings(targetTab) {
       const inputPin = await customPrompt("Nhập mã PIN bảo mật (mặc định: 1234):");
       if (inputPin === null) return; // người dùng bấm Hủy
       const ok = await verifyPin(inputPin);
@@ -2315,6 +2342,7 @@
       document.getElementById('bankAcc').value = localStorage.getItem('cfg_acc') || '';
       document.getElementById('bankName').value = localStorage.getItem('cfg_name') || '';
       document.getElementById('appPin').value = ''; // không hiển thị lại PIN cũ, để trống = giữ nguyên
+      switchSettingsTab(targetTab || 'rates');
       document.getElementById('settingsModal').classList.remove('hidden');
     }
 
@@ -2360,24 +2388,13 @@
       localStorage.setItem('taxi_trips', JSON.stringify(trips));
     }
 
-    function loadHistoryAndStats() {
-      const trips = JSON.parse(localStorage.getItem('taxi_trips') || '[]');
+    function renderTripListRows(trips) {
       const listEl = document.getElementById('historyList');
       listEl.innerHTML = '';
-      let dayTotal = 0, monthTotal = 0, yearTotal = 0;
-      const now = new Date();
-      const todayStr = now.toISOString().slice(0, 10);
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-
-      if (trips.length === 0) listEl.innerHTML = '<div class="text-center text-gray-400 py-6">Chưa có chuyến đi nào được ghi nhận.</div>';
+      if (trips.length === 0) { listEl.innerHTML = '<div class="text-center text-gray-400 py-6">Không có chuyến đi nào.</div>'; return; }
 
       trips.forEach(t => {
         const tDate = new Date(t.date);
-        if (t.date.slice(0, 10) === todayStr) dayTotal += t.total;
-        if (tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) monthTotal += t.total;
-        if (tDate.getFullYear() === currentYear) yearTotal += t.total;
-
         const badgeColor = t.mode === 'Giá Thỏa Thuận' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
         const payMethodBadge = t.paymentMethod === 'Chuyển khoản' ? '<span class="text-[9px] px-1.5 py-0.5 rounded font-semibold bg-indigo-100 text-indigo-800">CK</span>' : '<span class="text-[9px] px-1.5 py-0.5 rounded font-semibold bg-emerald-100 text-emerald-800">Tiền mặt</span>';
         const extraText = t.extraFee && t.extraFee > 0 ? ` (+${formatNumberWithDots(t.extraFee)}đ phụ phí)` : '';
@@ -2400,13 +2417,60 @@
         `;
         listEl.appendChild(row);
       });
+    }
+
+    function loadHistoryAndStats() {
+      const trips = JSON.parse(localStorage.getItem('taxi_trips') || '[]');
+      let dayTotal = 0, monthTotal = 0, yearTotal = 0, lastMonthTotal = 0;
+      const now = new Date();
+      const todayStr = now.toISOString().slice(0, 10);
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      // Tháng trước: xử lý cả trường hợp tháng 1 -> tháng trước là tháng 12 năm ngoái
+      const lastMonthDate = new Date(currentYear, currentMonth - 1, 1);
+      const lastMonth = lastMonthDate.getMonth();
+      const lastMonthYear = lastMonthDate.getFullYear();
+
+      trips.forEach(t => {
+        const tDate = new Date(t.date);
+        if (t.date.slice(0, 10) === todayStr) dayTotal += t.total;
+        if (tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) monthTotal += t.total;
+        if (tDate.getMonth() === lastMonth && tDate.getFullYear() === lastMonthYear) lastMonthTotal += t.total;
+        if (tDate.getFullYear() === currentYear) yearTotal += t.total;
+      });
+
+      renderTripListRows(trips);
 
       document.getElementById('statToday').innerText = `${formatNumberWithDots(dayTotal)} đ`;
       document.getElementById('statMonth').innerText = `${formatNumberWithDots(monthTotal)} đ`;
+      document.getElementById('statLastMonth').innerText = `${formatNumberWithDots(lastMonthTotal)} đ`;
       document.getElementById('statYear').innerText = `${formatNumberWithDots(yearTotal)} đ`;
       const quickFareEl = document.getElementById('quickTodayFare');
       quickFareEl.dataset.real = `${formatNumberWithDots(dayTotal)} đ`;
       quickFareEl.innerText = isRevenueVisible ? quickFareEl.dataset.real : '••••••';
+    }
+
+    // Xem doanh thu + danh sách chuyến của riêng 1 ngày cụ thể do người dùng chọn
+    function viewRevenueByDate() {
+      const dateVal = document.getElementById('revenueDateFilter').value;
+      if (!dateVal) { customAlert("Vui lòng chọn 1 ngày để xem."); return; }
+      const trips = JSON.parse(localStorage.getItem('taxi_trips') || '[]');
+      const dayTrips = trips.filter(t => t.date.slice(0, 10) === dateVal);
+      const total = dayTrips.reduce((sum, t) => sum + t.total, 0);
+
+      const resultBox = document.getElementById('revenueDateFilterResult');
+      const dateLabel = new Date(dateVal + 'T00:00:00').toLocaleDateString('vi-VN');
+      resultBox.innerText = `Ngày ${dateLabel}: ${formatNumberWithDots(total)} đ (${dayTrips.length} chuyến)`;
+      resultBox.classList.remove('hidden');
+
+      renderTripListRows(dayTrips);
+    }
+
+    // Bỏ lọc, quay lại xem toàn bộ danh sách + thống kê như bình thường
+    function resetHistoryFilter() {
+      document.getElementById('revenueDateFilter').value = '';
+      document.getElementById('revenueDateFilterResult').classList.add('hidden');
+      loadHistoryAndStats();
     }
 
     // Xoá 1 chuyến cụ thể khỏi lịch sử/doanh thu (hữu ích khi chuyến đó chỉ để test chức năng, không phải doanh thu thật)
