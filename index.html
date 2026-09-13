@@ -2145,7 +2145,17 @@
       return { finalAmount, base, extra };
     }
 
-    // Tính số tiền cước hiện tại (giống công thức trong finalizeTripData) nhưng KHÔNG lưu chuyến đi - dùng để kiểm tra trước khi cho thanh toán
+    // Kiểm tra xem THẬT SỰ đã có chuyến đi phát sinh chưa (không dựa vào số tiền, vì giá mở cửa mặc định
+    // vẫn cộng sẵn dù chưa chạy km nào, khiến số tiền tính ra > 0 dù chưa có chuyến thật).
+    function hasActiveTripData() {
+      if (currentMode === 'agreed') {
+        return parseFormattedNumber(document.getElementById('agreedPriceInput').value) > 0;
+      }
+      // Chế độ tính theo km: coi là "có chuyến" nếu đã chạy được quãng đường hoặc đã tính thời gian chạy
+      return totalKm > 0 || secondsElapsed > 0;
+    }
+
+    // Giữ lại hàm tính số tiền cước hiện tại (dùng để hiển thị/thanh toán khi đã xác nhận có chuyến đi)
     function getComputedFareAmount() {
       const extra = parseFormattedNumber(document.getElementById('extraFee').value);
       const base = calculateBaseFare(totalKm);
@@ -2173,13 +2183,13 @@
     }
 
     async function payCash() {
-      if (getComputedFareAmount() <= 0) { await offerNoTripOptions(); return; }
+      if (!hasActiveTripData()) { await offerNoTripOptions(); return; }
       const { finalAmount } = finalizeTripData('Tiền mặt');
       customAlert(`Đã hoàn thành chuyến đi! Khách thanh toán tiền mặt: ${formatNumberWithDots(finalAmount)} đ`);
     }
 
     async function payTransfer() {
-      if (getComputedFareAmount() <= 0) { await offerNoTripOptions(); return; }
+      if (!hasActiveTripData()) { await offerNoTripOptions(); return; }
       const { finalAmount, base, extra } = finalizeTripData('Chuyển khoản');
       renderQR(finalAmount, base, extra);
     }
