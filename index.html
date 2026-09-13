@@ -2183,7 +2183,7 @@
     }
 
     async function payCash() {
-      if (!hasActiveTripData()) { await offerNoTripOptions(); return; }
+      if (!hasActiveTripData()) { await customAlert("Không có phát sinh chuyến đi."); return; }
       const { finalAmount } = finalizeTripData('Tiền mặt');
       customAlert(`Đã hoàn thành chuyến đi! Khách thanh toán tiền mặt: ${formatNumberWithDots(finalAmount)} đ`);
     }
