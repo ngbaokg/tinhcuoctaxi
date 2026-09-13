@@ -2145,12 +2145,41 @@
       return { finalAmount, base, extra };
     }
 
-    function payCash() {
+    // Tính số tiền cước hiện tại (giống công thức trong finalizeTripData) nhưng KHÔNG lưu chuyến đi - dùng để kiểm tra trước khi cho thanh toán
+    function getComputedFareAmount() {
+      const extra = parseFormattedNumber(document.getElementById('extraFee').value);
+      const base = calculateBaseFare(totalKm);
+      return Math.round(base + extra);
+    }
+
+    // Khi bấm Trả tiền mặt / Chuyển khoản QR mà chưa có cuốc xe nào phát sinh (0đ) -> báo rõ, và cho tùy chọn tạo mã QR tự do không áp giá
+    async function offerNoTripOptions() {
+      const wantsFreeQr = await customConfirm("Không có phát sinh chuyến đi.\n\nBấm OK để tạo mã QR tự do (không áp giá tiền, dùng cho việc khác).\nBấm Huỷ để đóng.");
+      if (wantsFreeQr) openFreeQrModal();
+    }
+
+    // Tạo mã QR không kèm số tiền cố định - khách/người quét tự nhập số tiền khi chuyển khoản
+    function openFreeQrModal() {
+      const bank = localStorage.getItem('cfg_bank');
+      const acc = localStorage.getItem('cfg_acc');
+      const name = encodeURIComponent(localStorage.getItem('cfg_name') || '');
+      if (!bank || !acc) { customAlert("Vui lòng vào Cài Đặt để nhập Số tài khoản!"); return; }
+
+      const qrUrl = `https://img.vietqr.io/image/${bank}-${acc}-compact2.png?accountName=${name}`;
+      document.getElementById('qrImage').src = qrUrl;
+      document.getElementById('qrBreakdown').innerHTML = '<i class="fa-solid fa-circle-info mr-1"></i>Mã QR tự do — không áp giá tiền, người chuyển tự nhập số tiền khi quét.';
+      document.getElementById('qrNoteDisplay').innerText = 'Không kèm số tiền cố định';
+      document.getElementById('qrModal').classList.remove('hidden');
+    }
+
+    async function payCash() {
+      if (getComputedFareAmount() <= 0) { await offerNoTripOptions(); return; }
       const { finalAmount } = finalizeTripData('Tiền mặt');
       customAlert(`Đã hoàn thành chuyến đi! Khách thanh toán tiền mặt: ${formatNumberWithDots(finalAmount)} đ`);
     }
 
-    function payTransfer() {
+    async function payTransfer() {
+      if (getComputedFareAmount() <= 0) { await offerNoTripOptions(); return; }
       const { finalAmount, base, extra } = finalizeTripData('Chuyển khoản');
       renderQR(finalAmount, base, extra);
     }
