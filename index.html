@@ -571,6 +571,21 @@
               </div>
             </div>
             <div id="historyList" class="space-y-2 max-h-56 overflow-y-auto"></div>
+
+            <!-- Tự động sao lưu lên Google Drive -->
+            <div class="bg-sky-50 border border-sky-200 rounded-xl p-2.5 space-y-1.5">
+              <label class="flex items-center justify-between cursor-pointer">
+                <span class="text-xs font-bold text-sky-900 flex items-center gap-1.5">
+                  <i class="fa-brands fa-google-drive"></i> Tự động sao lưu lên Google Drive
+                </span>
+                <input type="checkbox" id="driveBackupToggle" onchange="toggleDriveBackup(this.checked)" class="w-4 h-4 accent-sky-600">
+              </label>
+              <div class="flex items-center justify-between">
+                <span id="driveBackupStatus" class="text-[10px] text-sky-700">Chưa sao lưu lần nào</span>
+                <button onclick="manualDriveBackupNow()" class="text-[10px] text-sky-700 font-bold hover:underline">Sao lưu ngay</button>
+              </div>
+              <p class="text-[9px] text-gray-400">Dùng chung tài khoản Google đã đăng nhập ở tab "Tài khoản" (phần Lịch hẹn). Dữ liệu được ghi vào 1 file JSON riêng trên Drive, tự cập nhật sau mỗi chuyến và mỗi 20 phút.</p>
+            </div>
           </div>
 
           <!-- ===== TAB: TÀI KHOẢN ===== -->
@@ -1384,13 +1399,15 @@
       if (googleTokenClient || typeof google === 'undefined' || !google.accounts) return;
       googleTokenClient = google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
-        scope: 'https://www.googleapis.com/auth/calendar.events',
+        // drive.file: chỉ cho phép app đọc/ghi ĐÚNG file do app này tạo ra trên Drive (không đụng tới file khác của khách hàng)
+        scope: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/drive.file',
         callback: (response) => {
           if (response && response.access_token) {
             googleAccessToken = response.access_token;
             saveGoogleTokenToStorage(response.access_token, response.expires_in);
             updateGcalUI(true);
             syncAllAppointmentsToGoogle();
+            if (isDriveBackupEnabled()) backupToGoogleDrive(true);
           }
         }
       });
@@ -1423,6 +1440,121 @@
       initGoogleAuthIfNeeded();
       if (!googleTokenClient) { customAlert("Không thể tải dịch vụ đăng nhập Google. Kiểm tra kết nối mạng và thử lại."); return; }
       googleTokenClient.requestAccessToken();
+    }
+
+    // ================= TỰ ĐỘNG SAO LƯU DỮ LIỆU LÊN GOOGLE DRIVE =================
+    // Dùng chung phiên đăng nhập Google ở trên (đã xin thêm quyền drive.file).
+    // File sao lưu là 1 file JSON DUY NHẤT trên Drive, được ghi đè mỗi lần backup (không tạo file mới lặp lại).
+    const DRIVE_BACKUP_ENABLED_KEY = 'gdrive_backup_enabled';
+    const DRIVE_BACKUP_FILE_ID_KEY = 'gdrive_backup_file_id';
+    const DRIVE_BACKUP_LAST_TIME_KEY = 'gdrive_backup_last_time';
+    const DRIVE_BACKUP_FILENAME = 'taxi-ai-backup.json';
+    let isDriveBackupRunning = false;
+
+    function isDriveBackupEnabled() {
+      return localStorage.getItem(DRIVE_BACKUP_ENABLED_KEY) === '1';
+    }
+
+    function buildBackupPayload() {
+      return {
+        exportedAt: new Date().toISOString(),
+        appVersion: 'taxi-ai-1.0',
+        trips: JSON.parse(localStorage.getItem('taxi_trips') || '[]'),
+        appointments: JSON.parse(localStorage.getItem('taxi_appointments') || '[]'),
+        rateProfiles: JSON.parse(localStorage.getItem('cfg_rate_profiles_list') || 'null')
+      };
+    }
+
+    // Tìm file backup cũ trên Drive (nếu người dùng cài lại app / đổi máy nhưng vẫn đăng nhập đúng tài khoản Google đó),
+    // để GHI ĐÈ thay vì tạo file trùng lặp mỗi lần.
+    async function findExistingDriveBackupFileId() {
+      const res = await fetch(
+        `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_BACKUP_FILENAME}' and trashed=false&spaces=drive&fields=files(id,name)`,
+        { headers: { 'Authorization': `Bearer ${googleAccessToken}` } }
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return (data.files && data.files.length > 0) ? data.files[0].id : null;
+    }
+
+    async function uploadDriveBackupFile(fileId, jsonContent) {
+      const metadata = { name: DRIVE_BACKUP_FILENAME, mimeType: 'application/json' };
+      const boundary = 'taxiai_backup_boundary';
+      const body =
+        `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+        `--${boundary}\r\nContent-Type: application/json\r\n\r\n${jsonContent}\r\n--${boundary}--`;
+
+      const url = fileId
+        ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
+        : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+
+      const res = await fetch(url, {
+        method: fileId ? 'PATCH' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${googleAccessToken}`,
+          'Content-Type': `multipart/related; boundary=${boundary}`
+        },
+        body
+      });
+      if (!res.ok) throw new Error('Drive upload failed: ' + res.status);
+      return res.json();
+    }
+
+    // silent = true: không hiện thông báo popup (dùng khi tự động chạy nền); false: dùng khi bấm nút "Sao lưu ngay"
+    async function backupToGoogleDrive(silent) {
+      if (isDriveBackupRunning) return;
+      if (!isDriveBackupEnabled()) return;
+
+      if (!googleAccessToken) {
+        // Chưa có phiên đăng nhập hợp lệ: nếu chạy nền thì bỏ qua lần này (sẽ tự thử lại lần sau),
+        // nếu người dùng chủ động bấm nút thì mở màn hình đăng nhập Google.
+        if (!silent) signInGoogleCalendar();
+        return;
+      }
+
+      isDriveBackupRunning = true;
+      updateDriveBackupStatusUI('Đang sao lưu...');
+      try {
+        let fileId = localStorage.getItem(DRIVE_BACKUP_FILE_ID_KEY);
+        if (!fileId) {
+          fileId = await findExistingDriveBackupFileId();
+        }
+        const payload = JSON.stringify(buildBackupPayload(), null, 2);
+        const result = await uploadDriveBackupFile(fileId, payload);
+        if (result && result.id) localStorage.setItem(DRIVE_BACKUP_FILE_ID_KEY, result.id);
+        localStorage.setItem(DRIVE_BACKUP_LAST_TIME_KEY, Date.now().toString());
+        updateDriveBackupStatusUI();
+        if (!silent) await customAlert("Đã sao lưu dữ liệu lên Google Drive thành công!");
+      } catch (err) {
+        console.warn('Sao lưu Google Drive thất bại:', err);
+        updateDriveBackupStatusUI();
+        if (!silent) await customAlert("Sao lưu thất bại. Kiểm tra kết nối mạng hoặc đăng nhập lại Google rồi thử lại.");
+      } finally {
+        isDriveBackupRunning = false;
+      }
+    }
+
+    function updateDriveBackupStatusUI(overrideText) {
+      const el = document.getElementById('driveBackupStatus');
+      if (!el) return;
+      if (overrideText) { el.innerText = overrideText; return; }
+      const last = localStorage.getItem(DRIVE_BACKUP_LAST_TIME_KEY);
+      el.innerText = last
+        ? `Lần sao lưu gần nhất: ${new Date(parseInt(last)).toLocaleString('vi-VN')}`
+        : 'Chưa sao lưu lần nào';
+    }
+
+    function toggleDriveBackup(checked) {
+      localStorage.setItem(DRIVE_BACKUP_ENABLED_KEY, checked ? '1' : '0');
+      if (checked) {
+        if (!googleAccessToken) { signInGoogleCalendar(); return; }
+        backupToGoogleDrive(true);
+      }
+    }
+
+    function manualDriveBackupNow() {
+      if (!isDriveBackupEnabled()) { customAlert("Hãy bật công tắc \"Tự động sao lưu lên Google Drive\" trước."); return; }
+      backupToGoogleDrive(false);
     }
 
     function signOutGoogleCalendar() {
@@ -2137,6 +2269,7 @@
 
       saveTrip(tripData);
       loadHistoryAndStats();
+      if (isDriveBackupEnabled()) backupToGoogleDrive(true); // sao lưu ngầm ngay sau mỗi chuyến, không làm phiền tài xế
 
       const langObj = guestGreetings[currentGuestLang] || guestGreetings['vi'];
       showMarqueeText(langObj.thankText, langObj.thankSub, "text-emerald-400", "text-amber-300");
@@ -2183,7 +2316,7 @@
     }
 
     async function payCash() {
-      if (!hasActiveTripData()) { await customAlert("Không có phát sinh chuyến đi."); return; }
+      if (!hasActiveTripData()) { await offerNoTripOptions(); return; }
       const { finalAmount } = finalizeTripData('Tiền mặt');
       customAlert(`Đã hoàn thành chuyến đi! Khách thanh toán tiền mặt: ${formatNumberWithDots(finalAmount)} đ`);
     }
@@ -2487,6 +2620,10 @@
       const quickFareEl = document.getElementById('quickTodayFare');
       quickFareEl.dataset.real = `${formatNumberWithDots(dayTotal)} đ`;
       quickFareEl.innerText = isRevenueVisible ? quickFareEl.dataset.real : '••••••';
+
+      const driveToggleEl = document.getElementById('driveBackupToggle');
+      if (driveToggleEl) driveToggleEl.checked = isDriveBackupEnabled();
+      updateDriveBackupStatusUI();
     }
 
     // Xem doanh thu + danh sách chuyến của riêng 1 ngày cụ thể do người dùng chọn
@@ -2631,6 +2768,8 @@
       setInterval(checkAppointmentReminders, 30000); // kiểm tra lịch hẹn mỗi 30 giây trong lúc app đang mở
       // Thử khôi phục phiên đăng nhập Google Calendar đã lưu từ trước (nếu có), để không phải đăng nhập lại mỗi lần mở app
       setTimeout(() => restoreGoogleSessionIfPossible(), 800); // chờ script Google Identity Services tải xong
+      updateDriveBackupStatusUI();
+      setInterval(() => { if (isDriveBackupEnabled()) backupToGoogleDrive(true); }, 20 * 60 * 1000); // tự sao lưu ngầm mỗi 20 phút trong lúc app đang mở
       if ('speechSynthesis' in window) {
         window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
       }
