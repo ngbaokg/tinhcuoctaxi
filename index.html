@@ -313,23 +313,19 @@
           </div>
         </div>
 
-        <!-- QUAN TRỌNG: gộp chung danh sách + nút + form vào 1 vùng cuộn duy nhất,
+        <!-- Nút mở form thêm mới: đặt ngay dưới khối đồng bộ Google Calendar, phía TRÊN danh sách,
+             để không phải cuộn xuống cuối danh sách mỗi lần cần thêm lịch hẹn mới. -->
+        <button id="btnToggleApptForm" onclick="toggleApptForm()" class="shrink-0 mb-3 w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
+        </button>
+
+        <!-- QUAN TRỌNG: gộp chung form + danh sách vào 1 vùng cuộn duy nhất,
              để khi form dài (nhiều trường), luôn kéo xuống được tới nút "Lưu lịch hẹn" ở cuối,
              thay vì để nút Lưu bị cắt ngoài vùng nhìn thấy như trước đây. -->
         <div class="overflow-y-auto flex-1 space-y-3 min-h-0">
 
-          <!-- Danh sách lịch hẹn -->
-          <div id="appointmentList" class="space-y-2">
-            <!-- render bằng JS -->
-          </div>
-
-          <!-- Nút mở form thêm mới -->
-          <button id="btnToggleApptForm" onclick="toggleApptForm()" class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow active:scale-95 transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
-          </button>
-
-          <!-- Form thêm/sửa lịch hẹn (ẩn mặc định) -->
-          <div id="apptForm" class="hidden space-y-2 border-t pt-2.5">
+          <!-- Form thêm/sửa lịch hẹn (ẩn mặc định) - đặt lên đầu vùng cuộn, hiện ngay khi bấm nút phía trên, khỏi cuộn tìm -->
+          <div id="apptForm" class="hidden space-y-2 border border-fuchsia-100 bg-fuchsia-50/30 rounded-2xl p-2.5">
             <div class="text-xs font-bold text-fuchsia-700 flex items-center gap-1.5" id="apptFormTitle">
               <i class="fa-solid fa-plus"></i> Thêm lịch hẹn mới
             </div>
@@ -388,6 +384,11 @@
             <button onclick="saveAppointmentForm()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition active:scale-95 mb-1">
               <i class="fa-solid fa-check"></i> Lưu lịch hẹn
             </button>
+          </div>
+
+          <!-- Danh sách lịch hẹn -->
+          <div id="appointmentList" class="space-y-2">
+            <!-- render bằng JS -->
           </div>
         </div>
       </div>
