@@ -1163,13 +1163,21 @@
           updateTotalFare();
         }
       }
+      // Mỗi lần quay lại app (mở lại từ nền), nếu chưa đăng nhập Google thì thử đăng nhập ngầm lại ngay -
+      // tận dụng mọi cơ hội trình duyệt còn phiên Google hợp lệ, thay vì chỉ thử 1 lần duy nhất lúc tải trang.
+      if (document.visibilityState === 'visible' && !googleAccessToken && typeof restoreGoogleSessionIfPossible === 'function') {
+        restoreGoogleSessionIfPossible();
+      }
     });
 
     // Một số trình duyệt/di động còn bắn thêm sự kiện focus khi quay lại app (ngoài visibilitychange),
-    // gọi lại cùng logic để tăng độ chắc chắn Wake Lock được khôi phục.
+    // gọi lại cùng logic để tăng độ chắc chắn Wake Lock và phiên đăng nhập Google được khôi phục.
     window.addEventListener('focus', async () => {
       if (isTripRunning && (!wakeLock || wakeLock.released)) {
         await requestWakeLock();
+      }
+      if (!googleAccessToken && typeof restoreGoogleSessionIfPossible === 'function') {
+        restoreGoogleSessionIfPossible();
       }
     });
 
